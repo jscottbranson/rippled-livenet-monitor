@@ -1,0 +1,21 @@
+# Cache
+__pycache__/
+*.pyc
+*.py.swp
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+
+# Other Stuff
+*.log
+*.sh
+*.db
+*.db-journal
+*.sqlite3
+*.sqlite3-journal
+
+# Private Files
+settings.py
