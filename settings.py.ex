@@ -16,4 +16,6 @@ MAX_CONNECT_ATTEMPTS = 999999 # Max number of connection retries
 
 CONSOLE_OUT = True # Print a fancy table to the console
 
+CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
+
 ASYNCIO_DEBUG = False # Verbose logging from asyncio

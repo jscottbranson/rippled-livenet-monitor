@@ -120,6 +120,7 @@ async def process_messages(settings, message_queue):
     '''
     # Create a blank template table with the servers we will monitor.
     table = await create_table(settings)
+    time_last_output = 0
     logging.info("Initial blank table created.")
     while True:
         message = await message_queue.get()
@@ -131,10 +132,11 @@ async def process_messages(settings, message_queue):
             elif message['data']['type'] == 'ledgerClosed':
                 logging.info(f"New ledger closed message from {message['server_url']}.")
                 table = await update_table_ledger(table, message)
-            if settings.CONSOLE_OUT is True:
-                logging.info(f"Preparing to print updated table based on message from: {message['server_url']}.")
+            if settings.CONSOLE_OUT is True and time.time() - time_last_output >= settings.CONSOLE_REFRESH_TIME:
+                logging.info(f"Preparing to print updated table.")
                 await print_table(table)
-                logging.info(f"Successfully printed updated table based on message from: {message['server_url']}.")
+                time_last_output = time.time()
+                logging.info(f"Successfully printed updated table.")
         except KeyError:
             logging.warning(f"Received an unexpected message: {message}.")
         except KeyboardInterrupt:
