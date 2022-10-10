@@ -9,7 +9,7 @@ from ws_connection.ws_listen import websocket_subscribe
 from ws_connection.ws_minder import mind_tasks
 from .process_output import process_messages
 
-COMMAND = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
+COMMAND = {"command": "subscribe", "streams": ["server", "ledger", "validations"], "ledger_index": "current"}
 
 async def spawn_connections(settings):
     '''
