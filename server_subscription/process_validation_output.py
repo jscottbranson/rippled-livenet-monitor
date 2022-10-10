@@ -75,10 +75,33 @@ async def update_table_validator(table, message):
 
     return table
 
-async def process_validations(settings, table_validator, processed_validations, message):
+async def update_val_keys(val_keys, table):
+    '''
+    Remove duplicate entries from the val_keys list.
+    :param list val_keys: Keys from validators we want to monitor
+    :param dict table: Includes master/ephemeral key mappings
+    '''
+    to_remove = []
+    for validator in table:
+        master = table[validator].get('master_key')
+        eph = table[validator].get('validation_public_key')
+
+        if isinstance(master, str) and isinstance(eph, str):
+            if master in val_keys and eph in val_keys:
+                logging.warning(f"Duplicate validator found in settings. Master key: {master}. Ephemeral key: {eph}. Deleting duplicate ephemeral key from tracking list.")
+                to_remove.append(eph)
+
+    for key in to_remove:
+        val_keys.remove(key)
+        table.pop(key)
+
+    return val_keys, table
+
+async def process_validations(settings, val_keys, table_validator, processed_validations, message):
     '''
     Process unique validation messages.
     :param settings: Configuration file
+    :param list val_keys: master and ephemeral validation keys to monitor for
     :param dict table_validator: Table for aggregating validation messages
     :param list processed_validations: Validation messages we already processed (avoid
     processing duplicate messages)
@@ -98,9 +121,12 @@ async def process_validations(settings, table_validator, processed_validations, 
         processed_validations = await prune_processed_validations(
             settings, processed_validations
         )
+        # Remove duplicate entries (e.g., if someone puts a master and ephemeral key in settings)
+        # from val_keys
+        val_keys, table_validator = await update_val_keys(val_keys, table_validator)
 
     logging.info("Done processing validation message.")
-    return table_validator, processed_validations
+    return val_keys, table_validator, processed_validations
 
 async def check_validations(settings, val_keys, table_validator, processed_validations, message):
     '''
@@ -115,17 +141,17 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     '''
     # Only attend to messages from servers we are monitoring
     if message['data'].get('master_key') in val_keys:
-        table_validator, processed_validations = await process_validations(
-            settings, table_validator, processed_validations, message
+        val_keys, table_validator, processed_validations = await process_validations(
+            settings, val_keys, table_validator, processed_validations, message
         )
     elif message['data'].get('validation_public_key') in val_keys:
-        table_validator, processed_validations = await process_validations(
-            settings, table_validator, processed_validations, message
+        val_keys, table_validator, processed_validations = await process_validations(
+            settings, val_keys, table_validator, processed_validations, message
         )
     else:
         logging.info(f"Ignored validation message from: {message['server_url']}.")
 
-    return table_validator, processed_validations
+    return val_keys, table_validator, processed_validations
 
 async def create_table_validation(settings):
     '''
