@@ -2,6 +2,7 @@
 Process validation stream messages.
 '''
 import logging
+import time
 import asyncio
 
 from prettytable import PrettyTable
@@ -25,7 +26,7 @@ async def print_table_validation(table):
     '''
     pretty_table = PrettyTable()
     pretty_table.field_names = [
-        "Server", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index",
+        "Server", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index", "Last Updated",
     ]
 
     table = await format_table_validation(table)
@@ -38,21 +39,28 @@ async def print_table_validation(table):
             table[key]['full'],
             table[key]['ledger_hash'],
             table[key]['ledger_index'],
+            table[key]['time_updated'],
         ])
 
     print(pretty_table)
 
-async def prune_processed_validations(settings, processed_validations):
+async def clean_validations(settings, val_keys, table_validator, processed_validations):
     '''
     Ensure the processed_validations list doesn't go on forever.
+
+    Ensure the same validator isn't being monitored twice (due to a duplicate entry in
+    the settings file.
     :param settings: Config file
+    :param list val_keys: Master or ephemeral validation keys we are monitoring for
     :param list processed_validations: Prune this
     '''
     if len(processed_validations) >= settings.PROCESSED_VAL_MAX:
         half_list = settings.PROCESSED_VAL_MAX / 2
         logging.info(f"Processed validation list >= {settings.PROCESSED_VAL_MAX}. Deleting {half_list} items.")
         del processed_validations[0:int(half_list)]
-    return processed_validations
+
+        val_keys, table_validator = await update_val_keys(val_keys, table_validator)
+    return val_keys, table_validator, processed_validations
 
 async def update_table_validator(table, message):
     '''
@@ -72,6 +80,7 @@ async def update_table_validator(table, message):
     update['ledger_index'] = message.get('ledger_index')
     update['master_key'] = message.get('master_key')
     update['validation_public_key'] = message.get('validation_public_key')
+    update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
 
     return table
 
@@ -117,13 +126,10 @@ async def process_validations(settings, val_keys, table_validator, processed_val
         processed_validations.append(message['data']['signature'])
         logging.info(f"Appended validation from {message['server_url']} to received tracking queue.")
         # Prune received message queue
-        logging.info("Checking to see if we need to prune validation tracking queue.")
-        processed_validations = await prune_processed_validations(
-            settings, processed_validations
+        logging.info("Checking to see if we need to clean things")
+        val_keys, table_validator, processed_validations = await clean_validations(
+            settings, val_keys, table_validator, processed_validations
         )
-        # Remove duplicate entries (e.g., if someone puts a master and ephemeral key in settings)
-        # from val_keys
-        val_keys, table_validator = await update_val_keys(val_keys, table_validator)
 
     logging.info("Done processing validation message.")
     return val_keys, table_validator, processed_validations
@@ -169,6 +175,7 @@ async def create_table_validation(settings):
             'ledger_index': None,
             'master_key': validator['key'],
             'validation_public_key': None,
+            'time_updated': None,
         }
 
     for validator in settings.VALIDATOR_EPH_KEYS:
@@ -179,6 +186,7 @@ async def create_table_validation(settings):
             'ledger_index': None,
             'master_key': None,
             'validation_public_key': validator['key'],
+            'time_updated': None,
         }
 
     return table

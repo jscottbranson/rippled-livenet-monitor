@@ -34,7 +34,7 @@ async def print_table_server(table):
     pretty_table.field_names = [
         "Server Name", "State", "Base Load", "Srv Load",
         "Net Load", "Base Fee", "Ref Fee", "Fee Escalation",
-        "Queue Fee", "LL Hash", "LL Index", "LL # Tx", "Time Last Update"
+        "Queue Fee", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
     ]
     table = await format_table_server(table)
     for key in table:
@@ -64,6 +64,7 @@ async def update_table_ledger(table, message):
     update['ledger_index'] = message['data'].get('ledger_index')
     update['ledger_hash'] = message['data'].get('ledger_hash')
     update['txn_count'] = message['data'].get('txn_count')
+    update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
 
     return table
 
