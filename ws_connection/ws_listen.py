@@ -48,7 +48,7 @@ async def websocket_subscribe(server, subscription_command, message_queue):
             async with websocket_connection as ws:
                 # Subscribe to the websocket stream
                 await ws.send(json.dumps(subscription_command))
-                logging.info(f"Subscribed to: {server['url']}")
+                logging.warning(f"Subscribed to: {server['url']}")
                 while True:
                     # Listen for response messages
                     data = await ws.recv()

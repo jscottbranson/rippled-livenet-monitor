@@ -1,8 +1,11 @@
 '''
 This file is used to configure the monitoring bot.
 '''
+import logging
 
-LOG_FILE = "info.log" # Where should the log file live?
+LOG_FILE = "monitor.log" # Where should the log file live?
+
+LOG_LEVEL = logging.WARNING # How verbose should the logs be ("INFO", "WARNING", "ERROR", "CRITICAL")?
 
 # An array with each server IP address mapped to a human readable address.
 # These should be stock servers (validators typically should not allow inbound connections).

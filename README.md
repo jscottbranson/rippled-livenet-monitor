@@ -5,6 +5,8 @@ Specify stock (non-validating) servers you wish to directly connect to via webso
 
 Specify validating nodes' master or ephemeral validation keys in the appropriate `settings.py` section. Validations from these servers will be sourced from the specified `SERVERS` in `settings.py`.
 
+As this tool is used to monitor the live network, it is not particularly useful for monitoring reporting mode servers.
+
 Console output is available now, text message updates are planned for the future.
 
 Logging level can be changed in `run.py`. `INFO` produces excessive messages from ignored validations, so `WARNING` is more useful.

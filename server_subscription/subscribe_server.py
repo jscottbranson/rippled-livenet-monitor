@@ -40,7 +40,7 @@ async def spawn_connections(settings):
     asyncio.ensure_future(
         mind_tasks(settings, ws_servers, COMMAND, message_queue)
     )
-    logging.info("Initial asyncio task list is running.")
+    logging.warning("Initial asyncio task list is running.")
 
 def start_server_info(settings):
     '''

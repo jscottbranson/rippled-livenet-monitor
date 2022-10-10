@@ -29,7 +29,7 @@ async def resubscribe_client(ws_servers, subscription_command, server, message_q
         }
     )
     ws_servers.remove(server)
-    logging.info(f"Removed disconnected server from task loop: {server}.")
+    logging.warning(f"Removed disconnected server from task loop: {server}.")
     return ws_servers
 
 async def mind_tasks(settings, ws_servers, subscription_command, message_queue):

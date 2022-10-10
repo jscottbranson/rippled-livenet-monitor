@@ -10,8 +10,8 @@ def set_logging():
     Set logging params.
     '''
     logging.basicConfig(
-        filename="monitor.log",
-        level=logging.INFO,
+        filename=settings.LOG_FILE,
+        level=settings.LOG_LEVEL,
         datefmt="%Y-%m-%d %H:%M:%S",
         format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
     )
