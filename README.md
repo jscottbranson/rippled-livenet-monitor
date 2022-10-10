@@ -7,6 +7,8 @@ Specify validating nodes' master or ephemeral validation keys in the appropriate
 
 Console output is available now, text message updates are planned for the future.
 
+Logging level can be changed in `run.py`. `INFO` produces excessive messages from ignored validations, so `WARNING` is more useful.
+
 This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt.
 
 ## Running the bot
