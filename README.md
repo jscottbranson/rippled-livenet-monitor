@@ -3,7 +3,7 @@ This bot is designed to subscribe to the `server`, `ledger`, and `validation` st
 
 Specify stock (non-validating) servers you wish to directly connect to via websocket in the `SERVERS` section of `settings.py`.
 
-Specify validating nodes' master or ephemeral validation keys in the appropriate `settings.py` section. Validations from these servers will be sources from the specified `SERVERS` in `settings.py`.
+Specify validating nodes' master or ephemeral validation keys in the appropriate `settings.py` section. Validations from these servers will be sourced from the specified `SERVERS` in `settings.py`.
 
 Console output is available now, text message updates are planned for the future.
 
