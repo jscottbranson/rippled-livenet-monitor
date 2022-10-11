@@ -66,15 +66,15 @@ async def websocket_subscribe(server, subscription_command, message_queue):
                     except KeyboardInterrupt:
                         break
         except (
-                TimeoutError,
-                ConnectionResetError,
-                ConnectionRefusedError,
-                ssl.CertificateError,
-                websockets.exceptions.InvalidStatusCode,
-                websockets.exceptions.ConnectionClosedError,
-                websockets.exceptions.ConnectionClosedOK,
-                websockets.exceptions.InvalidMessage,
-                socket.gaierror,
+            TimeoutError,
+            ConnectionResetError,
+            ConnectionRefusedError,
+            ssl.CertificateError,
+            websockets.exceptions.InvalidStatusCode,
+            websockets.exceptions.ConnectionClosedError,
+            websockets.exceptions.ConnectionClosedOK,
+            websockets.exceptions.InvalidMessage,
+            socket.gaierror,
         ) as error:
             logging.warning(f"An exception: ({error}) resulted in the websocket connection to: {server['url']} being closed.")
         except () as error:

@@ -9,7 +9,18 @@ from ws_connection.ws_listen import websocket_subscribe
 from ws_connection.ws_minder import mind_tasks
 from .process_output import process_messages
 
-COMMAND = {"command": "subscribe", "streams": ["server", "ledger", "validations"], "ledger_index": "current"}
+
+async def get_command(settings):
+    '''
+    Only subscribe to the validation stream if necessary.
+    '''
+    if not settings.VALIDATOR_MASTER_KEYS and not settings.VALIDATOR_EPH_KEYS:
+        command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
+    else:
+        command = {"command": "subscribe", "streams": ["server", "ledger", "validations"], "ledger_index": "current"}
+
+    logging.info(f"Subscription command will be: {command}")
+    return command
 
 async def spawn_connections(settings):
     '''
@@ -17,13 +28,14 @@ async def spawn_connections(settings):
     '''
     ws_servers = []
     message_queue = asyncio.Queue(maxsize=0)
+    command = await get_command(settings)
     logging.info("Adding server subscriptions to the event loop.")
     for server in settings.SERVERS:
         ws_servers.append(
             {
                 'task': asyncio.ensure_future(
                     websocket_subscribe(
-                        server , COMMAND, message_queue
+                        server , command, message_queue
                     )
                 ),
                 'url': server['url'],
@@ -38,7 +50,7 @@ async def spawn_connections(settings):
     )
 
     asyncio.ensure_future(
-        mind_tasks(settings, ws_servers, COMMAND, message_queue)
+        mind_tasks(settings, ws_servers, command, message_queue)
     )
     logging.warning("Initial asyncio task list is running.")
 

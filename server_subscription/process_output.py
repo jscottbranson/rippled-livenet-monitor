@@ -32,7 +32,7 @@ async def process_messages(settings, message_queue):
             # Check for server subscription messages
             if 'result' in message['data']:
                 logging.info(f"Server status message received from {message['server_url']}. Preparing to update the table.")
-                table_stock = await process_stock_output.update_table_server(table_stock, message)
+                table_stock = await process_stock_output.update_table_server(settings, table_stock, message)
                 logging.info(f"Successfully updated the table with server status message from: {message['server_url']}.")
             # Check for ledger subscription messages
             elif message['data']['type'] == 'ledgerClosed':
@@ -52,9 +52,10 @@ async def process_messages(settings, message_queue):
                 await process_stock_output.print_table_server(table_stock)
                 logging.info(f"Successfully printed updated server table.")
 
-                logging.info(f"Preparing to print updated validations table.")
-                await process_validation_output.print_table_validation(table_validator)
-                logging.info(f"Successfully printed updated validations table.")
+                if settings.VALIDATOR_MASTER_KEYS or settings.VALIDATOR_EPH_KEYS:
+                    logging.info(f"Preparing to print updated validations table.")
+                    await process_validation_output.print_table_validation(table_validator)
+                    logging.info(f"Successfully printed updated validations table.")
                 time_last_output = time.time()
         except KeyError as error :
             logging.warning(f"Error: {error}. Received an unexpected message: {message}.")

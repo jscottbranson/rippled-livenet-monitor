@@ -116,20 +116,18 @@ async def process_validations(settings, val_keys, table_validator, processed_val
     processing duplicate messages)
     :param dict message: JSON decoded message to process
     '''
-    # Ignore duplicate validation messages
-    if message['data']['signature'] not in processed_validations:
-        # Update the table
-        logging.info(f"Preparing to update validator table based on message from {message['server_url']}.")
-        table_validator = await update_table_validator(table_validator, message)
-        logging.info(f"Updated validator table based on message from {message['server_url']}.")
-        # Add the message so we don't process duplicates
-        processed_validations.append(message['data']['signature'])
-        logging.info(f"Appended validation from {message['server_url']} to received tracking queue.")
-        # Prune received message queue
-        logging.info("Checking to see if we need to clean things")
-        val_keys, table_validator, processed_validations = await clean_validations(
-            settings, val_keys, table_validator, processed_validations
-        )
+    # Update the table
+    logging.info(f"Preparing to update validator table based on message from {message['server_url']}.")
+    table_validator = await update_table_validator(table_validator, message)
+    logging.info(f"Updated validator table based on message from {message['server_url']}.")
+    # Add the message so we don't process duplicates
+    processed_validations.append(message['data']['signature'])
+    logging.info(f"Appended validation from {message['server_url']} to received tracking queue.")
+    # Prune received message queue
+    logging.info("Checking to see if we need to clean things")
+    val_keys, table_validator, processed_validations = await clean_validations(
+        settings, val_keys, table_validator, processed_validations
+    )
 
     logging.info("Done processing validation message.")
     return val_keys, table_validator, processed_validations
@@ -146,14 +144,12 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     :param dict message: JSON decoded message to process
     '''
     # Only attend to messages from servers we are monitoring
-    if message['data'].get('master_key') in val_keys:
-        val_keys, table_validator, processed_validations = await process_validations(
-            settings, val_keys, table_validator, processed_validations, message
-        )
-    elif message['data'].get('validation_public_key') in val_keys:
-        val_keys, table_validator, processed_validations = await process_validations(
-            settings, val_keys, table_validator, processed_validations, message
-        )
+    if message['data'].get('master_key') in val_keys or message['data'].get('validation_public_key') in val_keys:
+        # Ignore duplicate validation messages
+        if message['data']['signature'] not in processed_validations:
+            val_keys, table_validator, processed_validations = await process_validations(
+                settings, val_keys, table_validator, processed_validations, message
+            )
     else:
         logging.info(f"Ignored validation message from: {message['server_url']}.")
 

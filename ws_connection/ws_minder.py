@@ -5,11 +5,13 @@ import asyncio
 import logging
 
 from .ws_listen import websocket_subscribe
+from notifications import notify_twilio
 
-async def resubscribe_client(ws_servers, subscription_command, server, message_queue):
+async def resubscribe_client(settings, ws_servers, subscription_command, server, message_queue):
     '''
     Attempt to reconnect dropped websocket connections to remote servers.
 
+    :param settings: Config file
     :param list ws_servers: Connections to websocket servers
     :param dict server: Info on the server that the reconnection attempt will be made to
     :param dict subscription_command: Message to send to websocket server
@@ -17,7 +19,11 @@ async def resubscribe_client(ws_servers, subscription_command, server, message_q
     :return: Connections to websocket servers
     :rtype: list
     '''
-    logging.warning(f"WS connection to {server['url']} closed. Attempting to reconnect. Retry counter: {server['retry_count']}")
+    message_body = str(f"WS connection to {server['url']} closed. Attempting to reconnect. Retry counter: {server['retry_count']}")
+    logging.warning(message_body)
+    if settings.TWILIO is True:
+        response_id = await notify_twilio.send_twilio_sms(settings, message_body)
+
     ws_servers.append(
         {
             #'task': asyncio.create_task(
@@ -29,7 +35,13 @@ async def resubscribe_client(ws_servers, subscription_command, server, message_q
         }
     )
     ws_servers.remove(server)
+
     logging.warning(f"Removed disconnected server from task loop: {server}.")
+    message_body = str(f"It appears we reconnected to {server['url']}. Retry counter: {server['retry_count'] + 1}")
+    logging.warning(message_body)
+    if settings.TWILIO is True:
+        response_id = await notify_twilio.send_twilio_sms(settings, message_body)
+
     return ws_servers
 
 async def mind_tasks(settings, ws_servers, subscription_command, message_queue):
@@ -47,6 +59,7 @@ async def mind_tasks(settings, ws_servers, subscription_command, message_queue):
             for server in ws_servers:
                 if server['task'].done() and server['retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
                     ws_servers = await resubscribe_client(
+                        settings,
                         ws_servers,
                         subscription_command,
                         server,

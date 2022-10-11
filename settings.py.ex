@@ -13,6 +13,7 @@ LOG_LEVEL = logging.WARNING # How verbose should the logs be ("INFO", "WARNING",
 # from a below validator decreases (in other words, validation monitoring gets more accurate
 # with more stock servers).
 SERVERS = [
+    {"url": "wss://xrplcluster.com:443", "name": "Cluster", "ssl_verify": True},
     {"url": "wss://s1.ripple.com:443", "name": "Ripple-S1", "ssl_verify": True},
     {"url": "wss://s2.ripple.com:443", "name": "Ripple-S2", "ssl_verify": True},
 ]
@@ -45,3 +46,15 @@ CONSOLE_OUT = True # Print a fancy table to the console
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
 
 ASYNCIO_DEBUG = False # Verbose logging from asyncio
+
+#### Twilio Settings ####
+TWILIO = True # Should notifications be sent via Twilio?
+
+# If TWILIO_ACCOUNT_SID and/or TWILIO_AUTH_TOKEN below are set to "None",
+# they will be sourced from env variables of the same name.
+TWILIO_ACCOUNT_SID = None
+TWILIO_AUTH_TOKEN = None
+
+# Numbers should be prefixed with a "+" and the country code (e.g., +1 for the USA).
+NUMBER_FROM = "+12223333"
+NUMBER_TO = "+12223333"
