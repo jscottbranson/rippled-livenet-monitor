@@ -19,7 +19,7 @@ async def resubscribe_client(settings, ws_servers, subscription_command, server,
     :return: Connections to websocket servers
     :rtype: list
     '''
-    message_body = str(f"WS connection to {server['url']} closed. Attempting to reconnect. Retry counter: {server['retry_count']}")
+    message_body = str(f"WS connection to {server['name']} closed. Attempting to reconnect. Retry counter: {server['retry_count']}")
     logging.warning(message_body)
     if settings.TWILIO is True:
         response_id = await notify_twilio.send_twilio_sms(settings, message_body)
@@ -31,13 +31,15 @@ async def resubscribe_client(settings, ws_servers, subscription_command, server,
                 websocket_subscribe(server, subscription_command, message_queue)
             ),
             'url': server['url'],
+            'name': server['name'],
+            'ssl_verify': server['ssl_verify'],
             'retry_count': server['retry_count'] + 1,
         }
     )
     ws_servers.remove(server)
 
     logging.warning(f"Removed disconnected server from task loop: {server}.")
-    message_body = str(f"It appears we reconnected to {server['url']}. Retry counter: {server['retry_count'] + 1}")
+    message_body = str(f"It appears we reconnected to {server['name']}. Retry counter: {server['retry_count'] + 1}")
     logging.warning(message_body)
     if settings.TWILIO is True:
         response_id = await notify_twilio.send_twilio_sms(settings, message_body)

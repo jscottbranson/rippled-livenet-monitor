@@ -30,14 +30,20 @@ async def send_twilio_sms(settings, message_body):
     :param str message_body: Message content
     '''
     sid, auth_token = await get_account_info(settings)
+
+    # Remove extraneous characters from phone numbers
+    number_from = ''.join(x for x in settings.NUMBER_FROM if x.isdigit() or x == "+")
+    number_to = ''.join(x for x in settings.NUMBER_TO if x.isdigit() or x == "+")
+
+    # Send the message
     try:
         client = Client(sid, auth_token)
 
         if sid and auth_token:
             message = client.messages.create(
                 body=message_body,
-                from_=settings.NUMBER_FROM,
-                to=settings.NUMBER_TO
+                from_=number_from,
+                to=number_to
             )
         return(message.sid)
 

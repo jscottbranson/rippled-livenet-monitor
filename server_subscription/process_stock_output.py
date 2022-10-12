@@ -78,7 +78,7 @@ async def check_state_change(settings, table, message):
     '''
     if table.get('server_status') != message.get('server_status') and table.get('server_status') is not None:
         #server status changed
-        message_body = str(f"Server state changed for server: {table.get('server_name')}. From: {table.get('server_status')}. To: {message.get('server_status')}.")
+        message_body = str(f"State changed for server: {table.get('server_name')}. From: {table.get('server_status')}. To: {message.get('server_status')}.")
         logging.warning(message_body)
         if settings.TWILIO is True:
             response_id = await notify_twilio.send_twilio_sms(settings, message_body)
