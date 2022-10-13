@@ -9,7 +9,7 @@ Specify validating nodes' master or ephemeral validation keys in the appropriate
 
 As this tool is used to monitor the live network, it is not particularly useful for monitoring reporting mode servers.
 
-This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt. Similarly, "State" should be updated when a server is disconnected.
+This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt.
 
 ## Twilio Notifications
 If enabled in `settings.py`, Twilio notifications will be sent at the following times:
