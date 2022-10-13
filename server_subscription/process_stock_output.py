@@ -5,6 +5,7 @@ This output is not relevant for monitoring validations.
 import logging
 import time
 import asyncio
+from copy import deepcopy
 
 from prettytable import PrettyTable
 from notifications import notify_twilio
@@ -37,22 +38,22 @@ async def print_table_server(table):
         "Net Load", "Base Fee", "Ref Fee", "Fee Escalation",
         "Queue Fee", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
     ]
-    table = await format_table_server(table)
-    for key in table:
+    table_new = await format_table_server(deepcopy(table))
+    for key in table_new:
         pretty_table.add_row([
-            table[key]['server_name'],
-            table[key]['server_status'],
-            table[key]['load_base'],
-            table[key]['load_factor_server'],
-            table[key]['load_factor'],
-            table[key]['fee_base'],
-            table[key]['fee_ref'],
-            table[key]['load_factor_fee_escalation'],
-            table[key]['load_factor_fee_queue'],
-            table[key]['ledger_hash'],
-            table[key]['ledger_index'],
-            table[key]['txn_count'],
-            table[key]['time_updated'],
+            table_new[key]['server_name'],
+            table_new[key]['server_status'],
+            table_new[key]['load_base'],
+            table_new[key]['load_factor_server'],
+            table_new[key]['load_factor'],
+            table_new[key]['fee_base'],
+            table_new[key]['fee_ref'],
+            table_new[key]['load_factor_fee_escalation'],
+            table_new[key]['load_factor_fee_queue'],
+            table_new[key]['ledger_hash'],
+            table_new[key]['ledger_index'],
+            table_new[key]['txn_count'],
+            table_new[key]['time_updated'],
             ])
     print(pretty_table)
 

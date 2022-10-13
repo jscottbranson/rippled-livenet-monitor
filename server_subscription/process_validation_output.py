@@ -26,7 +26,7 @@ async def print_table_validation(table):
     '''
     pretty_table = PrettyTable()
     pretty_table.field_names = [
-        "Server", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index", "Last Updated",
+        "Validator", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index", "Last Updated",
     ]
 
     table = await format_table_validation(table)

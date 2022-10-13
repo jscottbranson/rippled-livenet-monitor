@@ -66,6 +66,7 @@ async def websocket_subscribe(server, subscription_command, message_queue):
                     except KeyboardInterrupt:
                         break
         except (
+            asyncio.exceptions.TimeoutError,
             TimeoutError,
             ConnectionResetError,
             ConnectionRefusedError,
