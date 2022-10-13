@@ -8,6 +8,7 @@ import asyncio
 from ws_connection.ws_listen import websocket_subscribe
 from ws_connection.ws_minder import mind_tasks
 from .process_output import process_messages
+from . import process_stock_output
 
 
 async def get_command(settings):

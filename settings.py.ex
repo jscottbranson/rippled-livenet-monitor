@@ -34,18 +34,18 @@ VALIDATOR_EPH_KEYS = [
     {"key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "name": "Gatehub.net (eph)"},
 ]
 
+WS_RETRY = 20 # number of seconds to wait between dropped WS connection checks
+
 PROCESSED_VAL_MAX = 10000 # Maximum number of validation messages to store to avoid duplicates
 # when this number is reached, half of the validation message tracking list will be deleted.
 
-WS_RETRY = 20 # number of seconds to wait between dropped WS connection checks
-
 MAX_CONNECT_ATTEMPTS = 999999 # Max number of connection retries
+
+ASYNCIO_DEBUG = False # Verbose logging from asyncio
 
 CONSOLE_OUT = True # Print a fancy table to the console
 
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
-
-ASYNCIO_DEBUG = False # Verbose logging from asyncio
 
 #### Twilio Settings ####
 TWILIO = True # Should notifications be sent via Twilio?

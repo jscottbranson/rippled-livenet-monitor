@@ -12,6 +12,9 @@ from . import process_validation_output
 async def process_messages(settings, message_queue):
     '''
     Do stuff with messages.
+
+    :param settings: Config file
+    :param asyncio.queues.Queue message_queue: Incoming websocket messages
     '''
     time_last_output = 0
 
@@ -27,8 +30,8 @@ async def process_messages(settings, message_queue):
     # NOTE TO SELF: Don't forget to clean the processed_validations queue
 
     while True:
-        message = await message_queue.get()
         try:
+            message = await message_queue.get()
             # Check for server subscription messages
             if 'result' in message['data']:
                 logging.info(f"Server status message received from {message['server_url']}. Preparing to update the table.")
@@ -41,7 +44,7 @@ async def process_messages(settings, message_queue):
                 logging.info(f"Successfully updated the table with ledger closed message from: {message['server_url']}.")
             # Check for validation messages
             elif message['data']['type'] == 'validationReceived':
-                logging.info(f"New validation message from {message['server_url']}.")
+                #logging.info(f"New validation message from {message['server_url']}.")
                 val_keys, table_validator, processed_validations = await process_validation_output.check_validations(
                     settings, val_keys, table_validator, processed_validations, message
                 )
