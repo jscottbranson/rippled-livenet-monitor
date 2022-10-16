@@ -16,6 +16,7 @@ If enabled in `settings.py`, Twilio notifications will be sent at the following 
 1. Any server disconnect and again on reconnect
 2. When the state for a subscribed server changes
 3. (coming soon) when a subscribed server or a monitored validator are more than n ledgers ahead or behind the rest of the network
+4. (coming later) when latency is dangerously high between monitoring bot and the remote server
 
 ## Running the bot
 1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`

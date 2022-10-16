@@ -82,5 +82,5 @@ async def mind_tasks(settings, ws_servers, subscription_command, message_queue):
                 ws_servers.append(server)
                 logging.warning(f"Added new connection to the task loop: {server}.")
         except KeyboardInterrupt:
-            logging.info("Keyboard interrupt detected. Stopping ws_minder.")
+            logging.warning("Keyboard interrupt detected. Stopping ws_minder.")
             break

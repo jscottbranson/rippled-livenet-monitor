@@ -44,7 +44,7 @@ async def process_messages(settings, message_queue):
                 logging.info(f"Successfully updated the table with ledger closed message from: {message['server_url']}.")
             # Check for validation messages
             elif message['data']['type'] == 'validationReceived':
-                #logging.info(f"New validation message from {message['server_url']}.")
+                logging.info(f"New validation message from {message['server_url']}.")
                 val_keys, table_validator, processed_validations = await process_validation_output.check_validations(
                     settings, val_keys, table_validator, processed_validations, message
                 )

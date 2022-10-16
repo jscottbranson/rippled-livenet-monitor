@@ -59,16 +59,13 @@ async def websocket_subscribe(server, subscription_command, message_queue):
                         )
                     except (json.JSONDecodeError,) as error:
                         logging.warning(f"{server['url']}. Unable to decode JSON: {data}. Error: {error}")
-                        break
-                    except TypeError:
-                        # For some reason we get a bunch of type errors when exiting
-                        break
-                    except KeyboardInterrupt:
-                        break
+                    except (KeyboardInterrupt, RuntimeError):
+                        await ws.close()
         except (
             asyncio.exceptions.TimeoutError,
             TimeoutError,
             ConnectionResetError,
+            ConnectionError,
             ConnectionRefusedError,
             ssl.CertificateError,
             websockets.exceptions.InvalidStatusCode,
@@ -78,5 +75,7 @@ async def websocket_subscribe(server, subscription_command, message_queue):
             socket.gaierror,
         ) as error:
             logging.warning(f"An exception: ({error}) resulted in the websocket connection to: {server['url']} being closed.")
+            await websocket_connection.close()
         except () as error:
             logging.warning(f"Connection to {server['url']} refused with error: {error}.")
+            await websocket_connection.close()

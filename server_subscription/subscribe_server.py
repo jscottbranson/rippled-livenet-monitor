@@ -70,4 +70,6 @@ def start_server_info(settings):
             loop.run_forever()
         except KeyboardInterrupt:
             logging.critical("Keyboard interrupt detected, stopping asyncio loops.")
+            loop._default_executor.shutdown(wait=True)
+            loop.close()
             break

@@ -151,8 +151,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
                 settings, val_keys, table_validator, processed_validations, message
             )
     else:
-        #logging.info(f"Ignored validation message from: {message['server_url']}.")
-        pass
+        logging.info(f"Ignored validation message from: {message['server_url']}.")
 
     return val_keys, table_validator, processed_validations
 

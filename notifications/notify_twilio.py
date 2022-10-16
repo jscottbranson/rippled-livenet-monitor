@@ -1,6 +1,9 @@
 import os
 import logging
 import asyncio
+
+import requests
+
 import twilio
 from twilio.rest import Client
 
@@ -47,5 +50,8 @@ async def send_twilio_sms(settings, message_body):
             )
         return(message.sid)
 
-    except twilio.base.exceptions.TwilioException as error:
+    except (
+        twilio.base.exceptions.TwilioException,
+        requests.exceptions.ConnectionError,
+    ) as error:
         logging.critical(f"Error sending Twilio SMS: {error}")
