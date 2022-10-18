@@ -7,19 +7,18 @@ import logging
 from .ws_listen import websocket_subscribe
 from notifications import notify_twilio
 
-async def resubscribe_client(settings, ws_servers, subscription_command, server_del, message_queue):
+async def resubscribe_client(settings, ws_servers, server_del, message_queue):
     '''
     Attempt to reconnect dropped websocket connections to remote servers.
 
     :param settings: Config file
     :param list ws_servers: Connections to websocket servers
     :param dict server_del: Info on the server that the reconnection attempt will be made to
-    :param dict subscription_command: Message to send to websocket server
     :param asyncio.queues.Queue queue_receive: Queue for incoming websocket messages
     :return: Connections to websocket servers
     :rtype: list
     '''
-    logging.warning(f"WS connection to {server_del['name']} closed. Attempting to reconnect. Retry counter: {server_del['retry_count']}")
+    logging.warning(f"WS connection to '{server_del['name']}' closed. Attempting to reconnect. Retry counter: '{server_del['retry_count']}'.")
 
     # Pass a message to the queue indicating the server is disconnected
     await message_queue.put(
@@ -32,31 +31,31 @@ async def resubscribe_client(settings, ws_servers, subscription_command, server_
             },
         }
     )
-    logging.info(f"Put updated state for server: {server_del['name']} into message processing queue.")
+    logging.info(f"Put updated state for server: '{server_del['name']}' into message processing queue.")
 
     server_add = \
         {
             #'task': asyncio.create_task(
             'task': asyncio.ensure_future(
-                websocket_subscribe(server_del, subscription_command, message_queue)
+                websocket_subscribe(server_del, message_queue)
             ),
             'url': server_del['url'],
             'name': server_del['name'],
+            'command': server_del['command'],
             'ssl_verify': server_del['ssl_verify'],
             'retry_count': server_del['retry_count'] + 1,
         }
 
-    logging.warning(f"It appears we reconnected to {server_del['name']}. Retry counter: {server_del['retry_count'] + 1}")
+    logging.warning(f"It appears we reconnected to '{server_del['name']}'. Retry counter: '{server_del['retry_count'] + 1}'.")
 
-    return server_del, server_add
+    return server_add
 
-async def mind_tasks(settings, ws_servers, subscription_command, message_queue):
+async def mind_tasks(settings, ws_servers, message_queue):
     '''
     Check task loop & restart websocket clients if needed.
 
     :param settings: The settings file
     :param list ws_servers: Connections to websocket servers
-    :param dict subscription_command: Message to send to websocket server
     :param asyncio.queues.Queue message_queue: Incoming websocket messages
     '''
     while True:
@@ -66,21 +65,20 @@ async def mind_tasks(settings, ws_servers, subscription_command, message_queue):
             await asyncio.sleep(settings.WS_RETRY)
             for server in ws_servers:
                 if server['task'].done() and server['retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
-                    ws_del, ws_add = await resubscribe_client(
+                    ws_add = await resubscribe_client(
                             settings,
                             ws_servers,
-                            subscription_command,
                             server,
                             message_queue
                     )
-                    ws_servers_del.append(ws_del)
+                    ws_servers_del.append(server)
                     ws_servers_add.append(ws_add)
             for server in ws_servers_del:
                 ws_servers.remove(server)
-                logging.warning(f"Removed disconnected server from task loop: {server}.")
+                logging.info(f"Removed disconnected server from task loop: '{server}'.")
             for server in ws_servers_add:
                 ws_servers.append(server)
-                logging.warning(f"Added new connection to the task loop: {server}.")
+                logging.info(f"Added new connection to the task loop: '{server}'.")
         except KeyboardInterrupt:
             logging.warning("Keyboard interrupt detected. Stopping ws_minder.")
             break

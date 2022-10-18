@@ -17,6 +17,7 @@ env/
 *.sqlite3
 *.sqlite3-journal
 test.py
+] # I'm prone to creating a file with this name
 
 # Private Files
 settings.py

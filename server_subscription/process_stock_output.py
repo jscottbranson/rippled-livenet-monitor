@@ -8,7 +8,6 @@ import asyncio
 from copy import deepcopy
 
 from prettytable import PrettyTable
-from notifications import notify_twilio
 
 async def format_table_server(table):
     '''
@@ -70,33 +69,35 @@ async def update_table_ledger(table, message):
 
     return table
 
-async def check_state_change(settings, table, message):
+async def check_state_change(settings, table, message, sms_queue):
     '''
     Check if the server's state changed from the last known state.
 
     :param dict table: Previous information about the server
     :param dict message: Message with new information about the server
+    :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
     if table.get('server_status') != message.get('server_status') and table.get('server_status') is not None:
         #server status changed
         message_body = str(f"State changed for server: '{table.get('server_name')}'. From: '{table.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
-        if settings.TWILIO is True:
-            response_id = await notify_twilio.send_twilio_sms(settings, message_body)
+        if settings.SMS is True:
+            await sms_queue.put(message_body)
 
-async def update_table_server(settings, table, message):
+async def update_table_server(settings, table, message, sms_queue):
     '''
     Add info contained in new messages to the table.
 
     :param settings: Config file
     :param dict table: Table with server information
     :param dict message: New server subscription message
+    :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
     update = table[message['server_url']]
     message = message['data']['result']
 
     # Check for changes in server state
-    await check_state_change(settings, update, message)
+    await check_state_change(settings, update, message, sms_queue)
 
     update['fee_base'] = message.get('fee_base')
     update['fee_ref'] = message.get('fee_ref')

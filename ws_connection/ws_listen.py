@@ -20,62 +20,57 @@ async def create_ws_object(server):
     elif server['ssl_verify'] is True or server['url'][0:3].lower() == 'ws:':
         return websockets.connect(server['url'])
     else:
-        logging.error(f"Error determining SSL/TLS settings for server: {server}")
+        logging.error(f"Error determining SSL/TLS settings for server: '{server}'.")
         return None
 
-async def websocket_subscribe(server, subscription_command, message_queue):
+async def websocket_subscribe(server, message_queue):
     '''
     Connect to a websocket address using TLS settings specified in 'url'.
     Keep the socket open, and add unique response messages from the remote server to
     the queue.
 
-    :param dict server: URL and SSL certificate verification settings
-    :param json subscription_command: JSON object to send after opening the connection
+    :param dict server: URL SSL certificate, and subscription command
     :param asyncio.queues.Queue message_queue: Queue for incoming websocket messages
     '''
 
     try:
         # Check to see if a custom SSLContext is needed to ignore cert verification
         # Establish a connection object
-        logging.info(f"Attempting to connect to: {server['url']}.")
-        websocket_connection = await create_ws_object(server)
-    except (websockets.exceptions.InvalidURI) as error:
-        websocket_connection = None
-        logging.critical(f"Unable to connect to server: {server}; due to error: {error}")
-
-    if websocket_connection is not None:
-        try:
-            async with websocket_connection as ws:
-                # Subscribe to the websocket stream
-                await ws.send(json.dumps(subscription_command))
-                logging.warning(f"Subscribed to: {server['url']}")
-                while True:
-                    # Listen for response messages
+        logging.info(f"Attempting to connect to: '{server['name']}'.")
+        async with await create_ws_object(server) as ws:
+            await ws.send(json.dumps(server['command']))
+            logging.warning(f"Subscribed to: '{server['name']}' with command: '{server['command']}'.")
+            while True:
+                # Listen for response messages
+                try:
                     data = await ws.recv()
-                    try:
-                        data = json.loads(data)
-                        await message_queue.put(
-                            {"server_url": server['url'], "data": data}
-                        )
-                    except (json.JSONDecodeError,) as error:
-                        logging.warning(f"{server['url']}. Unable to decode JSON: {data}. Error: {error}")
-                    except (KeyboardInterrupt, RuntimeError):
-                        await ws.close()
-        except (
-            asyncio.exceptions.TimeoutError,
-            TimeoutError,
-            ConnectionResetError,
-            ConnectionError,
-            ConnectionRefusedError,
-            ssl.CertificateError,
-            websockets.exceptions.InvalidStatusCode,
-            websockets.exceptions.ConnectionClosedError,
-            websockets.exceptions.ConnectionClosedOK,
-            websockets.exceptions.InvalidMessage,
-            socket.gaierror,
-        ) as error:
-            logging.warning(f"An exception: ({error}) resulted in the websocket connection to: {server['url']} being closed.")
-            await websocket_connection.close()
-        except () as error:
-            logging.warning(f"Connection to {server['url']} refused with error: {error}.")
-            await websocket_connection.close()
+                    data = json.loads(data)
+                    await message_queue.put(
+                        {"server_url": server['url'], "data": data}
+                    )
+                except (json.JSONDecodeError,) as error:
+                    logging.warning(f"Server: '{server['name']}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
+                except KeyboardInterrupt:
+                    logging.warning(f"Keyboard Interrupt detected. Closing websocket connection to: '{server}'.")
+                    await ws.close()
+                    break
+    except (
+        asyncio.exceptions.TimeoutError,
+        asyncio.exceptions.CancelledError,
+        TimeoutError,
+        ConnectionResetError,
+        ConnectionError,
+        ConnectionRefusedError,
+        ssl.CertificateError,
+        websockets.exceptions.InvalidStatusCode,
+        websockets.exceptions.ConnectionClosedError,
+        websockets.exceptions.ConnectionClosedOK,
+        websockets.exceptions.InvalidMessage,
+        socket.gaierror,
+    ) as error:
+        logging.warning(f"An exception: '{error}' resulted in the websocket connection to: '{server['name']}' being closed.")
+    except (
+        websockets.exceptions.InvalidURI,
+    ) as error:
+        websocket_connection = None
+        logging.critical(f"Unable to connect to server: '{server}' due to an invalid URI: '{error}'.")

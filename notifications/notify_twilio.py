@@ -26,32 +26,67 @@ async def get_account_info(settings):
 
     return sid, auth_token
 
-async def send_twilio_sms(settings, message_body):
+async def send_message(sid, auth_token, number_from, number_to, message_body):
     '''
-    Send a SMS message.
-    :param settings: Config file
+    Use the prepared information to send the message.
+
+    :parm str sid: Twilio client ID
+    :param str auth_token: Twilio authentication token
+    :param str number_from: Number to send from
+    :param str number_to: Recipient's SMS number
     :param str message_body: Message content
     '''
-    sid, auth_token = await get_account_info(settings)
-
-    # Remove extraneous characters from phone numbers
-    number_from = ''.join(x for x in settings.NUMBER_FROM if x.isdigit() or x == "+")
-    number_to = ''.join(x for x in settings.NUMBER_TO if x.isdigit() or x == "+")
-
-    # Send the message
     try:
         client = Client(sid, auth_token)
 
-        if sid and auth_token:
-            message = client.messages.create(
-                body=message_body,
-                from_=number_from,
-                to=number_to
-            )
-        return(message.sid)
+        message = client.messages.create(
+            body=message_body,
+            from_=number_from,
+            to=number_to
+        )
+        return message.sid
 
     except (
         twilio.base.exceptions.TwilioException,
         requests.exceptions.ConnectionError,
     ) as error:
         logging.critical(f"Error sending Twilio SMS: {error}")
+
+async def clean_number(number):
+    '''
+    Clean a phone number.
+
+    :param str number: Phone number to be cleaned.
+    '''
+    number_clean = ''.join(x for x in number if x.isdigit() or x == "+")
+    logging.info(f"Successfully cleaned SMS number: {number}. Result: {number_clean}.")
+    return number_clean
+
+async def prep_send_message(settings):
+    '''
+    Send the SMS Message.
+
+    :param settings: Config file
+    '''
+    # Get authentication information
+    sid, auth_token = await get_account_info(settings)
+
+    # Remove extraneous characters from phone numbers
+    number_from = await clean_number(settings.NUMBER_FROM)
+    number_to = await clean_number(settings.NUMBER_TO)
+
+    return sid, auth_token, number_from, number_to
+
+async def send_twilio_sms(settings, message_body):
+    '''
+    Call this to send a SMS message.
+    This function is not responsible for sending the message
+
+    :param settings: Config file
+    :param str message_body: Message content
+    '''
+
+    sid, auth_token, number_from, number_to = await prep_send_message(settings)
+    sms_response = await send_message(sid, auth_token, number_from, number_to, message_body)
+    logging.info(f"Successfully sent SMS message: {message_body}. Received response {sms_response}.")
+    return sms_response

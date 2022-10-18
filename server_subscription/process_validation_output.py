@@ -56,7 +56,7 @@ async def clean_validations(settings, val_keys, table_validator, processed_valid
     '''
     if len(processed_validations) >= settings.PROCESSED_VAL_MAX:
         half_list = settings.PROCESSED_VAL_MAX / 2
-        logging.info(f"Processed validation list >= {settings.PROCESSED_VAL_MAX}. Deleting {half_list} items.")
+        logging.info(f"Processed validation list >= '{settings.PROCESSED_VAL_MAX}'. Deleting: '{half_list}' items.")
         del processed_validations[0:int(half_list)]
 
         val_keys, table_validator = await update_val_keys(val_keys, table_validator)
@@ -97,7 +97,7 @@ async def update_val_keys(val_keys, table):
 
         if isinstance(master, str) and isinstance(eph, str):
             if master in val_keys and eph in val_keys:
-                logging.warning(f"Duplicate validator found in settings. Master key: {master}. Ephemeral key: {eph}. Deleting duplicate ephemeral key from tracking list.")
+                logging.warning(f"Duplicate validator found in settings. Master key: '{master}'. Ephemeral key: '{eph}'. Deleting duplicate ephemeral key from tracking list.")
                 to_remove.append(eph)
 
     for key in to_remove:
@@ -117,12 +117,12 @@ async def process_validations(settings, val_keys, table_validator, processed_val
     :param dict message: JSON decoded message to process
     '''
     # Update the table
-    logging.info(f"Preparing to update validator table based on message from {message['server_url']}.")
+    logging.info(f"Preparing to update validator table based on message from '{message['server_url']}'.")
     table_validator = await update_table_validator(table_validator, message)
-    logging.info(f"Updated validator table based on message from {message['server_url']}.")
+    logging.info(f"Updated validator table based on message from '{message['server_url']}'.")
     # Add the message so we don't process duplicates
     processed_validations.append(message['data']['signature'])
-    logging.info(f"Appended validation from {message['server_url']} to received tracking queue.")
+    logging.info(f"Appended validation from '{message['server_url']}' to received tracking queue.")
     # Prune received message queue
     logging.info("Checking to see if we need to clean things")
     val_keys, table_validator, processed_validations = await clean_validations(
@@ -151,7 +151,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
                 settings, val_keys, table_validator, processed_validations, message
             )
     else:
-        logging.info(f"Ignored validation message from: {message['server_url']}.")
+        logging.info(f"Ignored validation message from: '{message['server_url']}'.")
 
     return val_keys, table_validator, processed_validations
 
