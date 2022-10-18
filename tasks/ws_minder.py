@@ -4,7 +4,7 @@ Attempt to reconnect when a websocket connection drops.
 import asyncio
 import logging
 
-from .ws_listen import websocket_subscribe
+from ws_connection.ws_listen import websocket_subscribe
 from notifications import notify_twilio
 
 async def resubscribe_client(settings, ws_servers, server_del, message_queue):
@@ -32,6 +32,8 @@ async def resubscribe_client(settings, ws_servers, server_del, message_queue):
         }
     )
     logging.info(f"Put updated state for server: '{server_del['name']}' into message processing queue.")
+
+    del(server_del['task'])
 
     server_add = \
         {

@@ -6,10 +6,9 @@ import logging
 import asyncio
 
 from ws_connection.ws_listen import websocket_subscribe
-from ws_connection.ws_minder import mind_tasks
-from .process_output import process_messages
+from .ws_minder import mind_tasks
+from process_responses.process_output import process_messages
 from notifications.notification_watcher import notifications
-from . import process_stock_output
 
 
 async def get_command(settings, val_stream_count):
@@ -67,7 +66,7 @@ async def spawn_connections(settings):
 
     logging.warning("Initial asyncio task list is running.")
 
-def start_server_info(settings):
+def start_task_loop(settings):
     '''
     Run the asyncio event loop.
     '''

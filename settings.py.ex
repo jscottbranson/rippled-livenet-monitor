@@ -42,7 +42,9 @@ PROCESSED_VAL_MAX = 10000 # Maximum number of validation messages to store to av
 MAX_CONNECT_ATTEMPTS = 999999 # Max number of connection retries
 
 MAX_VAL_STREAMS = 5 # Max validations streams to subscribe to. These produce a lot of messages.
-# Client too slow WS disconnects can be caused by subscribing to too many validation streams
+# Client too slow WS disconnects and other unexpected behavior likely results from subscribing to excessive validation streams.
+# Too few streams can result in false missed validation messages.
+# The above setting is ignored if no validators are defined for monitoring.
 
 ASYNCIO_DEBUG = False # Verbose logging from asyncio
 
@@ -52,11 +54,11 @@ CONSOLE_OUT = True # Print a fancy table to the console
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
 
 #### SMS Settings ####
-SMS = True # Should we send SMS notifications?
+SMS = False # Should we send SMS notifications?
 
-TWILIO = True # Should notifications be sent via Twilio?
+TWILIO = False # Should notifications be sent via Twilio?
 # If TWILIO_ACCOUNT_SID and/or TWILIO_AUTH_TOKEN below are set to "None",
-# they will be sourced from env variables of the same name.
+# they will be sourced from env variables of the same name (this is likely more secure).
 TWILIO_ACCOUNT_SID = None
 TWILIO_AUTH_TOKEN = None
 

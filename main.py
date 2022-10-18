@@ -3,7 +3,7 @@ Run the program.
 '''
 import logging
 import settings
-from server_subscription.subscribe_server import start_server_info
+from tasks.task_minder import start_task_loop
 
 def set_logging():
     '''
@@ -18,4 +18,4 @@ def set_logging():
 
 if __name__ == '__main__':
     set_logging()
-    start_server_info(settings)
+    start_task_loop(settings)
