@@ -42,7 +42,7 @@ PROCESSED_VAL_MAX = 10000 # Maximum number of validation messages to store to av
 MAX_CONNECT_ATTEMPTS = 999999 # Max number of connection retries
 
 MAX_VAL_STREAMS = 5 # Max validations streams to subscribe to. These produce a lot of messages.
-# Client too slow WS disconnects and other unexpected behavior likely results from subscribing to excessive validation streams.
+# Client too slow WS disconnects, seemingly forked servers, and other unexpected behavior can result from excessive validation stream subscriptions.
 # Too few streams can result in false missed validation messages.
 # The above setting is ignored if no validators are defined for monitoring.
 
