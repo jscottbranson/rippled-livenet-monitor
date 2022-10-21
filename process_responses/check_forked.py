@@ -78,6 +78,7 @@ async def fork_checker(settings, table, sms_queue):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     '''
     logging.info("Checking to see if any servers are forked.")
+    forks = {}
     modes = await get_modes(table)
     if modes and len(modes) > 1:
         logging.warning(f"Multiple modes found for last ledger indexes: '{modes}' when considering input from: '{len(table)}' servers.")
@@ -85,6 +86,5 @@ async def fork_checker(settings, table, sms_queue):
         forks = await check_diff_mode(settings, table, modes)
         if forks:
             await alert_forks(settings, forks, sms_queue, modes)
-
     logging.info("Successfully checked to see if any servers are forked.")
     return forks
