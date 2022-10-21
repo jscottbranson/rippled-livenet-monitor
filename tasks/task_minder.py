@@ -7,7 +7,7 @@ import asyncio
 
 from ws_connection.ws_listen import websocket_subscribe
 from .ws_minder import mind_tasks
-from process_responses.process_output import process_messages
+from process_responses import process_output
 from notifications.notification_watcher import notifications
 
 
@@ -58,7 +58,8 @@ async def spawn_connections(settings):
         mind_tasks(settings, ws_servers, message_queue)
     )
     asyncio.ensure_future(
-        process_messages(settings, message_queue, sms_queue)
+        #process_messages(settings, message_queue, sms_queue)
+        process_output.ResponseProcessor(settings, message_queue, sms_queue).process_messages()
     )
     asyncio.ensure_future(
         notifications(settings, sms_queue)

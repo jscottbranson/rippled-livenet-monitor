@@ -21,6 +21,7 @@ async def get_account_info(settings):
             sid = os.environ['TWILIO_ACCOUNT_SID']
         if not settings.TWILIO_AUTH_TOKEN:
             auth_token = os.environ['TWILIO_AUTH_TOKEN']
+        logging.info("Successfully located Twilio auth credentials.")
     except KeyError as error:
         logging.critical(f"Unable to locate Twilio auth credentials. Error: {error}.")
 
@@ -44,6 +45,7 @@ async def send_message(sid, auth_token, number_from, number_to, message_body):
             from_=number_from,
             to=number_to
         )
+        logging.info("Successfully sent Twilio SMS: '{message_body}'.")
         return message.sid
 
     except (

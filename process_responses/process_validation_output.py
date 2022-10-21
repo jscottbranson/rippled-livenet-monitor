@@ -24,6 +24,7 @@ async def print_table_validation(table):
     '''
     Print the validation table.
     '''
+    logging.info("Preparing to print updated validations table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
         "Validator", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index", "Last Updated",
@@ -43,6 +44,7 @@ async def print_table_validation(table):
         ])
 
     print(pretty_table)
+    logging.info("Successfully printed updated validations table.")
 
 async def clean_validations(settings, val_keys, table_validator, processed_validations):
     '''
@@ -143,6 +145,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     processing duplicate messages)
     :param dict message: JSON decoded message to process
     '''
+    logging.info(f"New validation message from '{message['server_url']}'.")
     # Only attend to messages from servers we are monitoring
     if message['data'].get('master_key') in val_keys or message['data'].get('validation_public_key') in val_keys:
         # Ignore duplicate validation messages

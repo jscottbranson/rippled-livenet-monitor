@@ -9,9 +9,9 @@ LOG_LEVEL = logging.WARNING # How verbose should the logs be ("INFO", "WARNING",
 
 # An array with each server IP address mapped to a human readable address.
 # These should be stock servers (validators typically should not allow inbound connections).
-# As the number of servers in this array increases, the probability of a false missed validation
-# from a below validator decreases (in other words, validation monitoring gets more accurate
-# with more stock servers).
+# As the number of servers in this array increases (up to MAX_VAL_STREAMS),
+# the probability of a false missed validation from a below validator decreases
+# (in other words, validation monitoring gets more accurate with more stock servers).
 SERVERS = [
     {"url": "wss://xrplcluster.com:443", "name": "Cluster", "ssl_verify": True},
     {"url": "wss://s1.ripple.com:443", "name": "Ripple-S1", "ssl_verify": True},
@@ -45,6 +45,11 @@ MAX_VAL_STREAMS = 5 # Max validations streams to subscribe to. These produce a l
 # Client too slow WS disconnects, seemingly forked servers, and other unexpected behavior can result from excessive validation stream subscriptions.
 # Too few streams can result in false missed validation messages.
 # The above setting is ignored if no validators are defined for monitoring.
+
+LL_FORK_CUTOFF = 25 # Number of ledgers ahead of or behind the mode of
+# the servers being monitored to consider a server forked
+
+FORK_CHECK_FREQ = 10 # Number of seconds to wait between checks for forked servers
 
 ASYNCIO_DEBUG = False # Verbose logging from asyncio
 
