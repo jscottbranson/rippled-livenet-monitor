@@ -25,17 +25,21 @@ async def queue_state_change(server_del, message_queue):
         }
     )
 
-    logging.info(f"Put updated state for server: '{server_del['name']}' into message processing queue.")
+    logging.info(f"Put updated state for server: '{server_del.get('name')}' into message processing queue.")
 
-async def generate_new_server(server_del, message_queue):
+async def generate_new_server(server_del):
     '''
     Create an object for the new connection.
+
+    :param dict server_del: The server that will be deleted
     '''
     server_add = \
         {
             'task': None,
             'url': server_del['url'],
             'name': server_del['name'],
+            'phone_from': server_del['phone_from'],
+            'phone_to': server_del['phone_to'],
             'command': server_del['command'],
             'ssl_verify': server_del['ssl_verify'],
             'retry_count': server_del['retry_count'] + 1,
@@ -44,29 +48,27 @@ async def generate_new_server(server_del, message_queue):
     logging.info("Created new server connection object.")
     return server_add
 
-async def resubscribe_client(settings, ws_servers, server_del, message_queue):
+async def resubscribe_client(server_del, message_queue):
     '''
     Attempt to reconnect dropped websocket connections to remote servers.
 
-    :param settings: Config file
-    :param list ws_servers: Connections to websocket servers
     :param dict server_del: Info on the server that the reconnection attempt will be made to
     :param asyncio.queues.Queue message_queue: Queue for incoming websocket messages
-    :return: Connections to websocket servers
-    :rtype: list
+    :return: A new server object with an active websocket connection
+    :rtype: dict
     '''
-    logging.warning(f"WS connection to '{server_del['name']}' closed. Attempting to reconnect. Retry counter: '{server_del['retry_count']}'.")
+    logging.info(f"WS connection to '{server_del['name']}' closed. Attempting to reconnect. Retry counter: '{server_del['retry_count']}'.")
 
     # Pass a message to the queue indicating the server is disconnected
     await queue_state_change(server_del, message_queue)
     # Delete the disconnected server's task
-    del(server_del['task'])
+    del server_del['task']
     # Prepare the new connection
-    server_add = await generate_new_server(server_del, message_queue)
+    server_add = await generate_new_server(server_del)
     # Open the new connection
     server_add['task'] = asyncio.ensure_future(websocket_subscribe(server_del, message_queue))
 
-    logging.warning(f"It appears we reconnected to '{server_del['name']}'. Retry counter: '{server_del['retry_count'] + 1}'.")
+    logging.info(f"It appears we reconnected to '{server_del.get('name')}'. Retry counter: '{server_del['retry_count'] + 1}'.")
     return server_add
 
 async def mind_tasks(settings, ws_servers, message_queue):
@@ -84,12 +86,7 @@ async def mind_tasks(settings, ws_servers, message_queue):
             await asyncio.sleep(settings.WS_RETRY)
             for server in ws_servers:
                 if server['task'].done() and server['retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
-                    ws_add = await resubscribe_client(
-                            settings,
-                            ws_servers,
-                            server,
-                            message_queue
-                    )
+                    ws_add = await resubscribe_client(server, message_queue)
                     ws_servers_del.append(server)
                     ws_servers_add.append(ws_add)
             for server in ws_servers_del:

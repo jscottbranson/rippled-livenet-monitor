@@ -7,7 +7,7 @@ import asyncio
 
 from ws_connection.ws_listen import websocket_subscribe
 from .ws_minder import mind_tasks
-from process_responses import process_output
+from process_responses.process_output import ResponseProcessor
 from notifications.notification_watcher import notifications
 
 
@@ -48,6 +48,8 @@ async def spawn_connections(settings):
                 ),
                 'url': server['url'],
                 'name': server['name'],
+                'phone_to': None,
+                'phone_from': None,
                 'command': command,
                 'ssl_verify': server['ssl_verify'],
                 'retry_count': 0,
@@ -58,8 +60,7 @@ async def spawn_connections(settings):
         mind_tasks(settings, ws_servers, message_queue)
     )
     asyncio.ensure_future(
-        #process_messages(settings, message_queue, sms_queue)
-        process_output.ResponseProcessor(settings, message_queue, sms_queue).process_messages()
+        ResponseProcessor(settings, message_queue, sms_queue).process_messages()
     )
     asyncio.ensure_future(
         notifications(settings, sms_queue)

@@ -4,8 +4,7 @@ import asyncio
 
 import requests
 
-import twilio
-from twilio.rest import Client
+import aiohttp
 
 
 async def get_account_info(settings):
@@ -38,57 +37,34 @@ async def send_message(sid, auth_token, number_from, number_to, message_body):
     :param str message_body: Message content
     '''
     try:
-        client = Client(sid, auth_token)
-
-        message = client.messages.create(
-            body=message_body,
-            from_=number_from,
-            to=number_to
-        )
-        logging.info("Successfully sent Twilio SMS: '{message_body}'.")
-        return message.sid
+        async with aiohttp.ClientSession(auth=aiohttp.BasicAuth(
+            login=sid, password=auth_token)) as session:
+            return await session.post(
+                # This URL prob shouldn't be hard coded
+                f'https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json',
+                data={'From': number_from, 'To': number_to, 'Body': message_body}
+            )
 
     except (
-        twilio.base.exceptions.TwilioException,
-        requests.exceptions.ConnectionError,
+        aiohttp.web.HTTPServerError,
+        aiohttp.web.HTTPClientError,
+        aiohttp.web.HTTPRedirection,
     ) as error:
+        # Double check these exceptions
+        # Retry SMS messages that throw exceptions, if appropriate
         logging.critical(f"Error sending Twilio SMS: {error}")
 
-async def clean_number(number):
-    '''
-    Clean a phone number.
-
-    :param str number: Phone number to be cleaned.
-    '''
-    number_clean = ''.join(x for x in number if x.isdigit() or x == "+")
-    logging.info(f"Successfully cleaned SMS number: {number}. Result: {number_clean}.")
-    return number_clean
-
-async def prep_send_message(settings):
-    '''
-    Send the SMS Message.
-
-    :param settings: Config file
-    '''
-    # Get authentication information
-    sid, auth_token = await get_account_info(settings)
-
-    # Remove extraneous characters from phone numbers
-    number_from = await clean_number(settings.NUMBER_FROM)
-    number_to = await clean_number(settings.NUMBER_TO)
-
-    return sid, auth_token, number_from, number_to
-
-async def send_twilio_sms(settings, message_body):
+async def send_twilio_sms(settings, message):
     '''
     Call this to send a SMS message.
     This function is not responsible for sending the message
 
     :param settings: Config file
-    :param str message_body: Message content
+    :param dict message: phone_from, phone_to, and message keys
     '''
-
-    sid, auth_token, number_from, number_to = await prep_send_message(settings)
-    sms_response = await send_message(sid, auth_token, number_from, number_to, message_body)
-    logging.info(f"Successfully sent SMS message: {message_body}. Received response {sms_response}.")
+    sid, auth_token = await get_account_info(settings)
+    sms_response = await send_message(
+        sid, auth_token, message['phone_from'], message['phone_to'], message['message']
+    )
+    logging.info(f"Successfully sent SMS message: {message['message']}. Received response {sms_response}.")
     return sms_response

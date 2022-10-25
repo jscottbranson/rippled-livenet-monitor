@@ -19,8 +19,8 @@ This is an early stage project, so expect problems. For example, asyncio does no
 1. Check fields returned by 'server' subscription and update tables accordingly
 2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server
 
-## Twilio Notifications
-If enabled in `settings.py`, Twilio notifications will be sent at the following times:
+## SMS Notifications
+If enabled in `settings.py`, SMS notifications will be sent at the following times:
 1. Any server disconnect and again on reconnect
 2. When the state for a subscribed server changes
 3. When a subscribed server or a monitored validator is more than n ledgers (specified in `settings.py`) ahead of or behind the rest of the network

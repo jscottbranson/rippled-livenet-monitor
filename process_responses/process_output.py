@@ -22,6 +22,7 @@ class ResponseProcessor:
         self.settings = settings
         self.table_stock = {}
         self.table_validator = {}
+        self.forks = []
         self.val_keys = []
         self.processed_validations = []
         self.message_queue = message_queue
@@ -48,14 +49,11 @@ class ResponseProcessor:
         '''
         Call functions to check for forked servers.
         '''
-        # this function needs a timer
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
             table = {}
             table.update(self.table_validator)
             table.update(self.table_stock)
-            forks = await fork_checker(self.settings, table, self.sms_queue)
-            if forks:
-                pass
+            self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):
@@ -117,7 +115,6 @@ class ResponseProcessor:
             try:
                 message = await self.message_queue.get()
                 await self.sort_new_messages(message)
-                # We don't want to evaluate forks for every new message
                 await self.evaluate_forks()
                 await self.process_console_output()
             except KeyError as error :

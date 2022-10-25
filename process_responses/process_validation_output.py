@@ -145,16 +145,14 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     processing duplicate messages)
     :param dict message: JSON decoded message to process
     '''
-    logging.info(f"New validation message from '{message['server_url']}'.")
-    # Only attend to messages from servers we are monitoring
+    logging.debug(f"New validation message from '{message['server_url']}'.")
     if message['data'].get('master_key') in val_keys or message['data'].get('validation_public_key') in val_keys:
-        # Ignore duplicate validation messages
         if message['data']['signature'] not in processed_validations:
             val_keys, table_validator, processed_validations = await process_validations(
                 settings, val_keys, table_validator, processed_validations, message
             )
     else:
-        logging.info(f"Ignored validation message from: '{message['server_url']}'.")
+        logging.debug(f"Ignored validation message from: '{message['server_url']}'.")
 
     return val_keys, table_validator, processed_validations
 

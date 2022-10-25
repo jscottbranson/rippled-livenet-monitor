@@ -82,11 +82,12 @@ async def check_state_change(settings, table, message, sms_queue):
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
     if table.get('server_status') != message.get('server_status') and table.get('server_status') is not None:
-        #server status changed
         message_body = str(f"State changed for server: '{table.get('server_name')}'. From: '{table.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:
-            await sms_queue.put(message_body)
+            await sms_queue.put(
+                {'phone_from': settings.NUMBER_FROM, 'phone_to': settings.NUMBER_TO, 'message': message_body}
+            )
 
 async def update_table_server(settings, table, sms_queue, message):
     '''
@@ -101,7 +102,6 @@ async def update_table_server(settings, table, sms_queue, message):
     update = table[message['server_url']]
     message = message['data']['result']
 
-    # Check for changes in server state
     await check_state_change(settings, update, message, sms_queue)
 
     update['fee_base'] = message.get('fee_base')
