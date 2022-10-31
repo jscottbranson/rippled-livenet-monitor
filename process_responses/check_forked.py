@@ -143,6 +143,7 @@ async def fork_checker(settings, table, sms_queue, forks_old):
     modes = await get_modes(table)
     if modes and len(modes) > 1:
         logging.warning(f"Multiple modes found for last ledger indexes: '{modes}' when considering input from: '{len(table)}' servers. Skipping fork check.")
+        forks_new = forks_old
     else:
         forks_new = await check_diff_mode(settings, table, modes)
         forks_new_alert, forks_resolved_alert = await check_fork_changes(forks_old, forks_new)

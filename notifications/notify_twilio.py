@@ -1,5 +1,6 @@
 import os
 import logging
+import socket
 import asyncio
 
 import requests
@@ -46,9 +47,11 @@ async def send_message(sid, auth_token, number_from, number_to, message_body):
             )
 
     except (
-        aiohttp.web.HTTPServerError,
-        aiohttp.web.HTTPClientError,
-        aiohttp.web.HTTPRedirection,
+        OSError,
+        socket.gaierror,
+        aiohttp.HTTPServerError,
+        aiohttp.HTTPClientError,
+        aiohttp.HTTPRedirection,
     ) as error:
         # Double check these exceptions
         # Retry SMS messages that throw exceptions, if appropriate

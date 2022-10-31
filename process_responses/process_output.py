@@ -121,4 +121,8 @@ class ResponseProcessor:
                 logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
             except KeyboardInterrupt:
                 logging.info("Keyboard interrupt detected. Response processor stopped.")
+                self.message_queue.join()
+                self.sms_queue.join()
                 break
+            except Exception as error:
+                logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")

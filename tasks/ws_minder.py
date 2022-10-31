@@ -58,6 +58,7 @@ async def resubscribe_client(server_del, message_queue):
     :rtype: dict
     '''
     logging.info(f"WS connection to '{server_del['name']}' closed. Attempting to reconnect. Retry counter: '{server_del['retry_count']}'.")
+    loop = asyncio.get_event_loop()
 
     # Pass a message to the queue indicating the server is disconnected
     await queue_state_change(server_del, message_queue)
@@ -66,12 +67,12 @@ async def resubscribe_client(server_del, message_queue):
     # Prepare the new connection
     server_add = await generate_new_server(server_del)
     # Open the new connection
-    server_add['task'] = asyncio.ensure_future(websocket_subscribe(server_del, message_queue))
+    server_add['task'] = loop.create_task(websocket_subscribe(server_del, message_queue))
 
     logging.info(f"It appears we reconnected to '{server_del.get('name')}'. Retry counter: '{server_del['retry_count'] + 1}'.")
     return server_add
 
-async def mind_tasks(settings, ws_servers, message_queue):
+async def mind_connections(settings, ws_servers, message_queue):
     '''
     Check task loop & restart websocket clients if needed.
 
@@ -96,5 +97,8 @@ async def mind_tasks(settings, ws_servers, message_queue):
                 ws_servers.append(server)
                 logging.info(f"Added new connection to the task loop: '{server}'.")
         except KeyboardInterrupt:
+            await message_queue.join()
             logging.warning("Keyboard interrupt detected. Stopping ws_minder.")
             break
+        except Exception as error:
+            logging.critical(f"An otherwise uncaught exception occurred in the ws_minder: '{error}'.")
