@@ -57,6 +57,7 @@ async def websocket_subscribe(server, message_queue):
     except (
         asyncio.exceptions.TimeoutError,
         asyncio.exceptions.CancelledError,
+        OSError,
         TimeoutError,
         ConnectionResetError,
         ConnectionError,

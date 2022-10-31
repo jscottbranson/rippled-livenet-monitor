@@ -31,6 +31,7 @@ async def print_table_server(table):
     '''
     Print a pretty table to the console.
     '''
+    logging.info("Preparing to print updated server table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
         "Server Name", "State", "Base Load", "Srv Load",
@@ -55,17 +56,20 @@ async def print_table_server(table):
             table_new[key]['time_updated'],
             ])
     print(pretty_table)
+    logging.info("Successfully printed updated server table.")
 
 async def update_table_ledger(table, message):
     '''
     Add information from ledger closed messages into the table.
     '''
+    logging.info(f"New ledger closed message from '{message['server_url']}'.")
     update = table[message['server_url']]
 
     update['ledger_index'] = message['data'].get('ledger_index')
     update['ledger_hash'] = message['data'].get('ledger_hash')
     update['txn_count'] = message['data'].get('txn_count')
     update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+    logging.info(f"Successfully updated the table with ledger closed message from: '{message['server_url']}'.")
 
     return table
 
@@ -78,25 +82,26 @@ async def check_state_change(settings, table, message, sms_queue):
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
     if table.get('server_status') != message.get('server_status') and table.get('server_status') is not None:
-        #server status changed
         message_body = str(f"State changed for server: '{table.get('server_name')}'. From: '{table.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:
-            await sms_queue.put(message_body)
+            await sms_queue.put(
+                {'phone_from': settings.NUMBER_FROM, 'phone_to': settings.NUMBER_TO, 'message': message_body}
+            )
 
-async def update_table_server(settings, table, message, sms_queue):
+async def update_table_server(settings, table, sms_queue, message):
     '''
     Add info contained in new messages to the table.
 
     :param settings: Config file
     :param dict table: Table with server information
-    :param dict message: New server subscription message
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
+    :param dict message: New server subscription message
     '''
+    logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
     update = table[message['server_url']]
     message = message['data']['result']
 
-    # Check for changes in server state
     await check_state_change(settings, update, message, sms_queue)
 
     update['fee_base'] = message.get('fee_base')
@@ -109,6 +114,8 @@ async def update_table_server(settings, table, message, sms_queue):
     update['load_factor_fee_server'] = message.get('load_factor_fee_server')
     update['server_status'] = message.get('server_status')
     update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+
+    logging.info("Successfully updated the server status table.")
 
     return table
 
@@ -136,4 +143,5 @@ async def create_table_stock(settings):
             'txn_count': None,
             'time_updated': None,
         }
+    logging.info("Initial blank server table created.")
     return table
