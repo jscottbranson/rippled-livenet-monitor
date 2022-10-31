@@ -84,16 +84,13 @@ def start_task_loop(settings):
 
             logging.warning("Initial asyncio task list is running.")
             loop.run_forever()
-        except (
-            KeyboardInterrupt,
-        ):
+        except (KeyboardInterrupt):
             logging.critical("Keyboard interrupt detected, stopping asyncio loops.")
-            message_queue.join()
-            sms_queue.join()
             for server in ws_servers:
                 server['task'].cancel()
             for task in monitor_tasks:
                 task.cancel()
-            loop._default_executor.shutdown(wait=True)
+            loop.run_forever()
+        finally:
             loop.close()
             logging.critical("asyncio loops have been closed.")

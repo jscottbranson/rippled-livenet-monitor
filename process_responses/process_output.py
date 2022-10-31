@@ -119,10 +119,10 @@ class ResponseProcessor:
                 await self.process_console_output()
             except KeyError as error :
                 logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
-            except KeyboardInterrupt:
-                logging.info("Keyboard interrupt detected. Response processor stopped.")
-                self.message_queue.join()
-                self.sms_queue.join()
+            except (asyncio.CancelledError, KeyboardInterrupt):
+                #await self.message_queue.join()
+                #await self.sms_queue.join()
+                logging.critical("Keyboard interrupt detected. Response processor stopped.")
                 break
             except Exception as error:
                 logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")

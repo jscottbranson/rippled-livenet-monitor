@@ -32,9 +32,9 @@ async def notifications(settings, sms_queue):
             if settings.TWILIO is True:
                 response_twilio = await send_twilio_sms(settings, message)
                 logging.info(f"Twilio response: '{response_twilio}'.")
-        except KeyboardInterrupt:
-            sms_queue.join()
-            logging.warning("Keyboard interrupt detected. Stopping notification watcher.")
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            #await sms_queue.join()
+            logging.critical("Keyboard interrupt detected. Stopping notification watcher.")
             break
         except Exception as error:
             logging.critical(f"An otherwise uncaught exception occurred in the notification watcher: '{error}'.")

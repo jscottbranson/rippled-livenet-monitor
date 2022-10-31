@@ -96,9 +96,9 @@ async def mind_connections(settings, ws_servers, message_queue):
             for server in ws_servers_add:
                 ws_servers.append(server)
                 logging.info(f"Added new connection to the task loop: '{server}'.")
-        except KeyboardInterrupt:
-            await message_queue.join()
-            logging.warning("Keyboard interrupt detected. Stopping ws_minder.")
+        except (asyncio.CancelledError, KeyboardInterrupt):
+            #await message_queue.join()
+            logging.critical("Keyboard interrupt detected. Stopping ws_minder.")
             break
         except Exception as error:
             logging.critical(f"An otherwise uncaught exception occurred in the ws_minder: '{error}'.")

@@ -50,7 +50,7 @@ async def websocket_subscribe(server, message_queue):
                     )
                 except (json.JSONDecodeError,) as error:
                     logging.warning(f"Server: '{server['name']}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
-                except KeyboardInterrupt:
+                except (asyncio.CancelledError, KeyboardInterrupt):
                     logging.warning(f"Keyboard Interrupt detected. Closing websocket connection to: '{server}'.")
                     await ws.close()
                     break
