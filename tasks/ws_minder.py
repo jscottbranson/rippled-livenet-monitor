@@ -7,16 +7,16 @@ import logging
 from ws_connection.ws_listen import websocket_subscribe
 from notifications import notify_twilio
 
-async def queue_state_change(server_del, message_queue):
+async def queue_state_change(server, message_queue):
     '''
     Place a message into the queue to inform that a server is disconnected.
 
-    :param dict server_del: Info on the server that the reconnection attempt will be made to
+    :param dict server: Info on the server that the reconnection attempt will be made to
     :param asyncio.queues.Queue message_queue: Queue for incoming websocket messages
     '''
     await message_queue.put(
         {
-            'server_url': server_del.get('url'),
+            'server_url': server.get('url'),
             'data': {
                 'result': {
                     'server_status': 'disconnected from monitoring',
@@ -25,52 +25,29 @@ async def queue_state_change(server_del, message_queue):
         }
     )
 
-    logging.info(f"Put updated state for server: '{server_del.get('name')}' into message processing queue.")
+    logging.info(f"Put updated state for server: '{server.get('name')}' into message processing queue.")
 
-async def generate_new_server(server_del):
-    '''
-    Create an object for the new connection.
-
-    :param dict server_del: The server that will be deleted
-    '''
-    server_add = \
-        {
-            'task': None,
-            'url': server_del['url'],
-            'name': server_del['name'],
-            'phone_from': server_del['phone_from'],
-            'phone_to': server_del['phone_to'],
-            'command': server_del['command'],
-            'ssl_verify': server_del['ssl_verify'],
-            'retry_count': server_del['retry_count'] + 1,
-        }
-
-    logging.info("Created new server connection object.")
-    return server_add
-
-async def resubscribe_client(server_del, message_queue):
+async def resubscribe_client(server, message_queue):
     '''
     Attempt to reconnect dropped websocket connections to remote servers.
 
-    :param dict server_del: Info on the server that the reconnection attempt will be made to
+    :param dict server: The server that the reconnection attempt will be made to
     :param asyncio.queues.Queue message_queue: Queue for incoming websocket messages
-    :return: A new server object with an active websocket connection
+    :return: The server object with a new websocket connection
     :rtype: dict
     '''
-    logging.info(f"WS connection to '{server_del['name']}' closed. Attempting to reconnect. Retry counter: '{server_del['retry_count']}'.")
-    loop = asyncio.get_event_loop()
-
+    logging.info(f"WS connection to '{server['name']}' closed. Attempting to reconnect. Retry counter: '{server['retry_count']}'.")
     # Pass a message to the queue indicating the server is disconnected
-    await queue_state_change(server_del, message_queue)
+    await queue_state_change(server, message_queue)
     # Delete the disconnected server's task
-    del server_del['task']
-    # Prepare the new connection
-    server_add = await generate_new_server(server_del)
+    del server['task']
+    server['task'] = None
+    server['retry_count'] = server['retry_count'] + 1
     # Open the new connection
-    server_add['task'] = loop.create_task(websocket_subscribe(server_del, message_queue))
-
-    logging.info(f"It appears we reconnected to '{server_del.get('name')}'. Retry counter: '{server_del['retry_count'] + 1}'.")
-    return server_add
+    loop = asyncio.get_event_loop()
+    server['task'] = loop.create_task(websocket_subscribe(server, message_queue))
+    logging.info(f"It appears we reconnected to '{server.get('name')}'. Retry counter: '{server['retry_count']}'.")
+    return server
 
 async def mind_connections(settings, ws_servers, message_queue):
     '''
@@ -97,7 +74,6 @@ async def mind_connections(settings, ws_servers, message_queue):
                 ws_servers.append(server)
                 logging.info(f"Added new connection to the task loop: '{server}'.")
         except (asyncio.CancelledError, KeyboardInterrupt):
-            #await message_queue.join()
             logging.critical("Keyboard interrupt detected. Stopping ws_minder.")
             break
         except Exception as error:

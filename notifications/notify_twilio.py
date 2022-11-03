@@ -27,14 +27,14 @@ async def get_account_info(settings):
 
     return sid, auth_token
 
-async def send_message(sid, auth_token, number_from, number_to, message_body):
+async def send_message(sid, auth_token, phone_from, phone_to, message_body):
     '''
     Use the prepared information to send the message.
 
     :parm str sid: Twilio client ID
     :param str auth_token: Twilio authentication token
-    :param str number_from: Number to send from
-    :param str number_to: Recipient's SMS number
+    :param str phone_from: Number to send from
+    :param str phone_to: Recipient's SMS number
     :param str message_body: Message content
     '''
     try:
@@ -43,7 +43,7 @@ async def send_message(sid, auth_token, number_from, number_to, message_body):
             return await session.post(
                 # This URL prob shouldn't be hard coded
                 f'https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json',
-                data={'From': number_from, 'To': number_to, 'Body': message_body}
+                data={'From': phone_from, 'To': phone_to, 'Body': message_body}
             )
 
     except (

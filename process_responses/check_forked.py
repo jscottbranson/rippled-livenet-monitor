@@ -28,7 +28,7 @@ async def get_modes(table):
     ll_indexes = []
     modes = None
     for server in table:
-        index = table[server].get('ledger_index')
+        index = server.get('ledger_index')
         if index:
             ll_indexes.append(int(index))
     if ll_indexes:
@@ -41,17 +41,19 @@ async def check_diff_mode(settings, table, modes):
     Check if the servers in the table have different last ledger indexes then the mode.
 
     :param settings: Config file
-    :param dict table: Servers to check for different LL index numbers
+    :param list table: Dictionary for each server or validator being monitored
     :param list modes: Modes from the broader group of servers we are checking
     '''
     forks_new = []
     for server in table:
-        index = table[server].get('ledger_index')
-        if index and table[server].get('server_status') != "disconnected from monitoring":
+        index = server.get('ledger_index')
+        if index and server.get('server_status') != "disconnected from monitoring":
             if abs(int(modes[0]) - int(index)) > settings.LL_FORK_CUTOFF:
                 forks_new.append(
                     {
-                        'server_name': table[server].get('server_name'),
+                        'server_name': server.get('server_name'),
+                        'phone_from': server.get('phone_from'),
+                        'phone_to': server.get('phone_to'),
                         'ledger_index': index,
                         'time_forked': time.time(),
                     }
@@ -71,7 +73,7 @@ async def alert_resolved_forks(settings, forks, sms_queue):
         message = str(f"Previously forked server: '{server.get('server_name')}' appears to be back in consensus.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': settings.NUMBER_FROM, 'phone_to': settings.NUMBER_TO}
+            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
             await sms_queue.put(sms)
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
 
@@ -88,7 +90,7 @@ async def alert_new_forks(settings, forks, sms_queue, modes):
         message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': settings.NUMBER_FROM, 'phone_to': settings.NUMBER_TO}
+            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
             await sms_queue.put(sms)
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
@@ -134,9 +136,11 @@ async def fork_checker(settings, table, sms_queue, forks_old):
     Execute functions on tables to see if any servers are forked and alert if they are.
 
     :param settings: Config file
-    :param dict table: LL indexes for each server
+    :param list table: Dictionary for each server and validator being tracked
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
-    :param list forks_old: Dictionaries describing each of the previously forked servers
+    :param list forks_old: Dictionaries describing each of the previously forked servers or validators
+
+    :rtype: list
     '''
     forks_new = []
     logging.info("Checking to see if any servers are forked.")

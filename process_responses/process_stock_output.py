@@ -12,24 +12,29 @@ from prettytable import PrettyTable
 async def format_table_server(table):
     '''
     Format values to human readable.
+
+    :param list table: Dictionary for each server being tracked
+    :rtype: list
     '''
     color_reset = "\033[0;0m"
     green = "\033[0;32m"
     red = "\033[1;31m"
-    for key in table:
-        if isinstance(table[key]['ledger_hash'], str):
-            table[key]['ledger_hash'] = table[key]['ledger_hash'][:5]
-        if isinstance(table[key]['server_status'], str):
-            if table[key]['server_status'] == "full":
-                table[key]['server_status'] = green + table[key]['server_status'] + color_reset
+    for server in table:
+        if isinstance(server['ledger_hash'], str):
+            server['ledger_hash'] = server['ledger_hash'][:5]
+        if isinstance(server['server_status'], str):
+            if server['server_status'] == "full":
+                server['server_status'] = green + server['server_status'] + color_reset
             else:
-                table[key]['server_status'] = red + table[key]['server_status'] + color_reset
+                server['server_status'] = red + server['server_status'] + color_reset
 
     return table
 
 async def print_table_server(table):
     '''
     Print a pretty table to the console.
+
+    :param list table: Dictionary for each server being tracked
     '''
     logging.info("Preparing to print updated server table.")
     pretty_table = PrettyTable()
@@ -39,21 +44,21 @@ async def print_table_server(table):
         "Queue Fee", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
     ]
     table_new = await format_table_server(deepcopy(table))
-    for key in table_new:
+    for server in table_new:
         pretty_table.add_row([
-            table_new[key]['server_name'],
-            table_new[key]['server_status'],
-            table_new[key]['load_base'],
-            table_new[key]['load_factor_server'],
-            table_new[key]['load_factor'],
-            table_new[key]['fee_base'],
-            table_new[key]['fee_ref'],
-            table_new[key]['load_factor_fee_escalation'],
-            table_new[key]['load_factor_fee_queue'],
-            table_new[key]['ledger_hash'],
-            table_new[key]['ledger_index'],
-            table_new[key]['txn_count'],
-            table_new[key]['time_updated'],
+            server['server_name'],
+            server['server_status'],
+            server['load_base'],
+            server['load_factor_server'],
+            server['load_factor'],
+            server['fee_base'],
+            server['fee_ref'],
+            server['load_factor_fee_escalation'],
+            server['load_factor_fee_queue'],
+            server['ledger_hash'],
+            server['ledger_index'],
+            server['txn_count'],
+            server['time_updated'],
             ])
     print(pretty_table)
     logging.info("Successfully printed updated server table.")
@@ -61,32 +66,38 @@ async def print_table_server(table):
 async def update_table_ledger(table, message):
     '''
     Add information from ledger closed messages into the table.
+
+    :param list table: Dictionary for each server being tracked
+    :param dict message: Incoming ledger close message
+
+    :rtype: list
     '''
     logging.info(f"New ledger closed message from '{message['server_url']}'.")
-    update = table[message['server_url']]
 
-    update['ledger_index'] = message['data'].get('ledger_index')
-    update['ledger_hash'] = message['data'].get('ledger_hash')
-    update['txn_count'] = message['data'].get('txn_count')
-    update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+    for server in table:
+        if server['url'] is message['server_url']:
+            server['ledger_index'] = message['data'].get('ledger_index')
+            server['ledger_hash'] = message['data'].get('ledger_hash')
+            server['txn_count'] = message['data'].get('txn_count')
+            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     logging.info(f"Successfully updated the table with ledger closed message from: '{message['server_url']}'.")
 
     return table
 
-async def check_state_change(settings, table, message, sms_queue):
+async def check_state_change(settings, server, message, sms_queue):
     '''
     Check if the server's state changed from the last known state.
 
-    :param dict table: Previous information about the server
+    :param list table: Dictionary for each server being tracked (previous state information)
     :param dict message: Message with new information about the server
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
-    if table.get('server_status') != message.get('server_status') and table.get('server_status') is not None:
-        message_body = str(f"State changed for server: '{table.get('server_name')}'. From: '{table.get('server_status')}'. To: '{message.get('server_status')}'.")
+    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None:
+        message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:
             await sms_queue.put(
-                {'phone_from': settings.NUMBER_FROM, 'phone_to': settings.NUMBER_TO, 'message': message_body}
+                {'phone_from': server['phone_from'], 'phone_to': server['phone_to'], 'message': message_body}
             )
 
 async def update_table_server(settings, table, sms_queue, message):
@@ -94,54 +105,64 @@ async def update_table_server(settings, table, sms_queue, message):
     Add info contained in new messages to the table.
 
     :param settings: Config file
-    :param dict table: Table with server information
+    :param list table: Dictionary for each server being tracked
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     :param dict message: New server subscription message
     '''
     logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
-    update = table[message['server_url']]
-    message = message['data']['result']
+    message_result = message['data']['result']
 
-    await check_state_change(settings, update, message, sms_queue)
 
-    update['fee_base'] = message.get('fee_base')
-    update['fee_ref'] = message.get('fee_ref')
-    update['load_base'] = message.get('load_base')
-    update['load_factor'] = message.get('load_factor')
-    update['load_factor_fee_escalation'] = message.get('load_factor_fee_escalation')
-    update['load_factor_fee_queue'] = message.get('load_factor_fee_queue')
-    update['load_factor_fee_reference'] = message.get('load_factor_fee_reference')
-    update['load_factor_fee_server'] = message.get('load_factor_fee_server')
-    update['server_status'] = message.get('server_status')
-    update['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+    for server in table:
+        if server['url'] is message['server_url']:
+            await check_state_change(settings, server, message, sms_queue)
+            server['fee_base'] = message_result.get('fee_base')
+            server['fee_ref'] = message_result.get('fee_ref')
+            server['load_base'] = message_result.get('load_base')
+            server['load_factor'] = message_result.get('load_factor')
+            server['load_factor_fee_escalation'] = message_result.get('load_factor_fee_escalation')
+            server['load_factor_fee_queue'] = message_result.get('load_factor_fee_queue')
+            server['load_factor_fee_reference'] = message_result.get('load_factor_fee_reference')
+            server['load_factor_fee_server'] = message_result.get('load_factor_fee_server')
+            server['server_status'] = message_result.get('server_status')
+            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
 
-    logging.info("Successfully updated the server status table.")
+            logging.info("Successfully updated the server status table.")
 
     return table
 
 async def create_table_stock(settings):
     '''
     Create a table representing each server in the settings file.
+    ### This will have to be updated so the table is not created from settings.####
+
+    :param settings: Config file
+    :rtype: list
     '''
-    table = {}
+    table = []
     for server in settings.SERVERS:
-        table[server['url']] = {
-            'server_name': server['name'],
-            'fee_base': None,
-            'fee_ref': None,
-            'load_base': None,
-            'reserve_base': None,
-            'reserve_inc': None,
-            'load_factor': None,
-            'load_factor_fee_escalation': None,
-            'load_factor_fee_queue': None,
-            'load_factor_fee_reference': None,
-            'load_factor_server': None,
-            'server_status': None,
-            'ledger_index': None,
-            'ledger_hash': None,
-            'txn_count': None,
-            'time_updated': None,
-        }
+        table.append(
+            {
+                'server_name': server.get('name'),
+                'url': server.get('url'),
+                'phone_to': server.get('phone_to'),
+                'phone_from': server.get('phone_from'),
+                'fee_base': None,
+                'fee_ref': None,
+                'load_base': None,
+                'reserve_base': None,
+                'reserve_inc': None,
+                'load_factor': None,
+                'load_factor_fee_escalation': None,
+                'load_factor_fee_queue': None,
+                'load_factor_fee_reference': None,
+                'load_factor_server': None,
+                'server_status': None,
+                'ledger_index': None,
+                'ledger_hash': None,
+                'txn_count': None,
+                'time_updated': None,
+            }
+        )
     logging.info("Initial blank server table created.")
     return table
