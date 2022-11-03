@@ -92,7 +92,7 @@ async def check_state_change(settings, server, message, sms_queue):
     :param dict message: Message with new information about the server
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
-    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None:
+    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None and message.get('server_status') is not None:
         message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:

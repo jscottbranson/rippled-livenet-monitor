@@ -122,5 +122,5 @@ class ResponseProcessor:
             except (asyncio.CancelledError, KeyboardInterrupt):
                 logging.critical("Keyboard interrupt detected. Response processor stopped.")
                 break
-            #except Exception as error:
-                #logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")
+            except Exception as error:
+                logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")
