@@ -105,12 +105,9 @@ async def update_table_validator(table, message):
 
     for validator in table:
         if message.get('master_key') == validator['master_key'] or message.get('validation_public_key') == validator['validation_public_key']:
-            validator['full'] = message.get('full')
-            validator['ledger_hash'] = message.get('ledger_hash')
-            validator['ledger_index'] = message.get('ledger_index')
-            validator['master_key'] = message.get('master_key')
-            validator['validation_public_key'] = message.get('validation_public_key')
-            validator['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+            for key in validator.keys():
+                if key in message.keys():
+                    validator[key] = message[key]
     logging.info("Successfully updated validator table.")
 
     return table

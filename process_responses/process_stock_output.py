@@ -41,7 +41,7 @@ async def print_table_server(table):
     pretty_table.field_names = [
         "Server Name", "State", "Base Load", "Srv Load",
         "Net Load", "Base Fee", "Ref Fee", "Fee Escalation",
-        "Queue Fee", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
+        "Queue Fee", "History", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
     ]
     table_new = await format_table_server(deepcopy(table))
     for server in table_new:
@@ -55,6 +55,7 @@ async def print_table_server(table):
             server['fee_ref'],
             server['load_factor_fee_escalation'],
             server['load_factor_fee_queue'],
+            server['validated_ledgers'],
             server['ledger_hash'],
             server['ledger_index'],
             server['txn_count'],
@@ -72,15 +73,14 @@ async def update_table_ledger(table, message):
 
     :rtype: list
     '''
-    logging.info(f"New ledger closed message from '{message['server_url']}'.")
 
     for server in table:
-        if server['url'] is message['server_url']:
-            server['ledger_index'] = message['data'].get('ledger_index')
-            server['ledger_hash'] = message['data'].get('ledger_hash')
-            server['txn_count'] = message['data'].get('txn_count')
+        if server['url'] == message['server_url']:
+            for key in server.keys():
+                if key in message['data'].keys():
+                    server[key] = message['data'][key]
             server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
-    logging.info(f"Successfully updated the table with ledger closed message from: '{message['server_url']}'.")
+            logging.info(f"Successfully updated the table with ledger closed message from: '{server['url']}'.")
 
     return table
 
@@ -92,7 +92,7 @@ async def check_state_change(settings, server, message, sms_queue):
     :param dict message: Message with new information about the server
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
-    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None and message.get('server_status') is not None:
+    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None:
         message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:
@@ -112,19 +112,12 @@ async def update_table_server(settings, table, sms_queue, message):
     logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
     message_result = message['data']['result']
 
-
     for server in table:
         if server['url'] is message['server_url']:
-            await check_state_change(settings, server, message, sms_queue)
-            server['fee_base'] = message_result.get('fee_base')
-            server['fee_ref'] = message_result.get('fee_ref')
-            server['load_base'] = message_result.get('load_base')
-            server['load_factor'] = message_result.get('load_factor')
-            server['load_factor_fee_escalation'] = message_result.get('load_factor_fee_escalation')
-            server['load_factor_fee_queue'] = message_result.get('load_factor_fee_queue')
-            server['load_factor_fee_reference'] = message_result.get('load_factor_fee_reference')
-            server['load_factor_fee_server'] = message_result.get('load_factor_fee_server')
-            server['server_status'] = message_result.get('server_status')
+            await check_state_change(settings, server, message_result, sms_queue)
+            for key in server.keys():
+                if key in message_result.keys():
+                    server[key] = message_result[key]
             server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
 
             logging.info("Successfully updated the server status table.")
@@ -158,6 +151,7 @@ async def create_table_stock(settings):
                 'load_factor_fee_reference': None,
                 'load_factor_server': None,
                 'server_status': None,
+                'validated_ledgers': None,
                 'ledger_index': None,
                 'ledger_hash': None,
                 'txn_count': None,
