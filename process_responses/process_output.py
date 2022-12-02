@@ -52,6 +52,15 @@ class ResponseProcessor:
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
             table = self.table_validator + self.table_stock
             self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
+            forked_names = []
+            for fork in self.forks:
+                forked_names.append(fork['server_name'])
+            for server in self.table_stock + self.table_validator:
+                if server['server_name'] in forked_names:
+                    server['forked'] = True
+                else:
+                    server['forked'] = False
+
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):

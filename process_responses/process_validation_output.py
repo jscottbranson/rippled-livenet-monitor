@@ -14,6 +14,9 @@ async def format_table_validation(table):
 
     :param list table: Dictionaries for each validator being tracked
     '''
+    color_reset = "\033[0;0m"
+    green = "\033[0;32m"
+    red = "\033[1;31m"
     for validator in table:
         if isinstance(validator['master_key'], str):
             validator['master_key'] = validator['master_key'][:5]
@@ -21,6 +24,16 @@ async def format_table_validation(table):
             validator['validation_public_key'] = validator['validation_public_key'][:5]
         if isinstance(validator['ledger_hash'], str):
             validator['ledger_hash'] = validator['ledger_hash'][:5]
+        if isinstance(validator['validated_hash'], str):
+            validator['validated_hash'] = validator['validated_hash'][:5]
+        if validator['forked']:
+            validator['forked'] = red + str(validator['forked']) + color_reset
+        else:
+            validator['forked'] = green + str(validator['forked']) + color_reset
+        if validator['full']:
+            validator['full'] = green + str(validator['full']) + color_reset
+        else:
+            validator['full'] = red + str(validator['full']) + color_reset
     return table
 
 async def print_table_validation(table):
@@ -32,7 +45,8 @@ async def print_table_validation(table):
     logging.info("Preparing to print updated validations table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
-        "Validator", "Master Key", "Eph Key", "Full?", "LL Hash", "LL Index", "Last Updated",
+        "Validator Name", "Master Key", "Eph Key", "Version", "Base Fee", "Local LL Fee",
+        "LL Hash", "LL Index", "Full?", "Forked?", "Last Updated",
     ]
 
     table_new = await format_table_validation(deepcopy(table))
@@ -42,9 +56,13 @@ async def print_table_validation(table):
             validator['server_name'],
             validator['master_key'],
             validator['validation_public_key'],
-            validator['full'],
+            validator['server_version'],
+            validator['base_fee'],
+            validator['load_fee'],
             validator['ledger_hash'],
             validator['ledger_index'],
+            validator['full'],
+            validator['forked'],
             validator['time_updated'],
         ])
 
@@ -177,9 +195,19 @@ async def create_table_validation(settings):
             'server_name': validator['name'],
             'phone_from': validator.get('phone_from'),
             'phone_to': validator.get('phone_to'),
+            'cookie': None,
+            'server_version': None,
+            'base_fee': None,
+            'reserve_base': None,
+            'reserve_inc': None,
             'full': None,
             'ledger_hash': None,
+            'validated_hash': None,
             'ledger_index': None,
+            'signature': None,
+            'signing_time': None,
+            'load_fee': None,
+            'forked': None,
             'master_key': validator['key'],
             'validation_public_key': None,
             'time_updated': None,
@@ -190,9 +218,19 @@ async def create_table_validation(settings):
             'server_name': validator['name'],
             'phone_from': validator.get('phone_from'),
             'phone_to': validator.get('phone_to'),
+            'cookie': None,
+            'server_version': None,
+            'base_fee': None,
+            'reserve_base': None,
+            'reserve_inc': None,
             'full': None,
             'ledger_hash': None,
+            'validated_hash': None,
             'ledger_index': None,
+            'signature': None,
+            'signing_time': None,
+            'load_fee': None,
+            'forked': None,
             'master_key': None,
             'validation_public_key': validator['key'],
             'time_updated': None,

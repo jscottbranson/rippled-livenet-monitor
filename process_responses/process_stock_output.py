@@ -27,7 +27,10 @@ async def format_table_server(table):
                 server['server_status'] = green + server['server_status'] + color_reset
             else:
                 server['server_status'] = red + server['server_status'] + color_reset
-
+        if server['forked']:
+            server['forked'] = red + str(server['forked']) + color_reset
+        else:
+            server['forked'] = green + str(server['forked']) + color_reset
     return table
 
 async def print_table_server(table):
@@ -40,8 +43,8 @@ async def print_table_server(table):
     pretty_table = PrettyTable()
     pretty_table.field_names = [
         "Server Name", "State", "Base Load", "Srv Load",
-        "Net Load", "Base Fee", "Ref Fee", "Fee Escalation",
-        "Queue Fee", "History", "LL Hash", "LL Index", "LL # Tx", "Last Updated"
+        "Net Load", "Base Fee", "Ref Fee",
+        "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
     ]
     table_new = await format_table_server(deepcopy(table))
     for server in table_new:
@@ -53,12 +56,10 @@ async def print_table_server(table):
             server['load_factor'],
             server['fee_base'],
             server['fee_ref'],
-            server['load_factor_fee_escalation'],
-            server['load_factor_fee_queue'],
-            server['validated_ledgers'],
             server['ledger_hash'],
-            server['ledger_index'],
+            server['validated_ledgers'],
             server['txn_count'],
+            server['forked'],
             server['time_updated'],
             ])
     print(pretty_table)
@@ -92,13 +93,24 @@ async def check_state_change(settings, server, message, sms_queue):
     :param dict message: Message with new information about the server
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
-    if server.get('server_status') != message.get('server_status') and server.get('server_status') is not None:
+    if server.get('server_status') != message.get('server_status') \
+       and server.get('server_status') is not None \
+       and not server.get('forked'):
         message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'.")
         logging.warning(message_body)
         if settings.SMS is True:
             await sms_queue.put(
                 {'phone_from': server['phone_from'], 'phone_to': server['phone_to'], 'message': message_body}
             )
+
+async def log_keys(message_result, table):
+    '''
+    Keep track of all the potential keys returned by server subscription messages.
+    '''
+    logging.warning("Checking for new keys.")
+    for key in message_result:
+        if key not in table[0]:
+            logging.warning(f"new server subscription key found: '{key}'.")
 
 async def update_table_server(settings, table, sms_queue, message):
     '''
@@ -111,6 +123,8 @@ async def update_table_server(settings, table, sms_queue, message):
     '''
     logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
     message_result = message['data']['result']
+
+    await log_keys(message_result, table)
 
     for server in table:
         if server['url'] is message['server_url']:
@@ -140,21 +154,26 @@ async def create_table_stock(settings):
                 'url': server.get('url'),
                 'phone_to': server.get('phone_to'),
                 'phone_from': server.get('phone_from'),
+                'pubkey_node': None,
+                'hostid': None,
                 'fee_base': None,
                 'fee_ref': None,
                 'load_base': None,
                 'reserve_base': None,
                 'reserve_inc': None,
                 'load_factor': None,
-                'load_factor_fee_escalation': None,
-                'load_factor_fee_queue': None,
+                #'load_factor_fee_escalation': None,
+                #'load_factor_fee_queue': None,
                 'load_factor_fee_reference': None,
                 'load_factor_server': None,
                 'server_status': None,
                 'validated_ledgers': None,
                 'ledger_index': None,
                 'ledger_hash': None,
+                'ledger_time':None,
+                'forked': None,
                 'txn_count': None,
+                'random': None,
                 'time_updated': None,
             }
         )
