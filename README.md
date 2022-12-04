@@ -10,15 +10,20 @@ Specify stock (non-validating) servers you wish to directly connect to via webso
 
 Specify validating nodes' master or ephemeral validation keys in the appropriate `settings.py` section. Validations from these servers will be sourced from the specified `SERVERS` in `settings.py`.
 
-As this tool is used to monitor the live network, it is not particularly useful for monitoring reporting mode servers.
+As this tool is used to monitor the live network, it is not really useful for monitoring reporting mode/Clio servers.
 
 ## Warning
-This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt. All commits have been made to main - there is no development branch at this point - so consider everything potentially unstable. This monitoring tool is not yet intended for use in production environments (however, it does tend to be pretty stable).
+This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt.
+This monitoring tool is not yet intended for use in production environments (however, it does tend to be pretty stable).
+
+As written, asyncio will produce errors with Python 3.9, so this should be run with Python 3.10 or latter.
 
 ## To-Do
-1. Check fields returned by 'server' subscription and update tables accordingly
-2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server
-3. Attempt to reconnect to servers that stop sending new last_ledger index numbers
+1. Check fields returned by 'server' subscription and update tables accordingly.
+2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server.
+3. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
+4. Integrate with sqlite DBs to retrieve server and contact information mappings.
+5. Better asyncio that runs cleanly with Python 3.9
 
 ## SMS Notifications
 If enabled in `settings.py`, SMS notifications will be sent at the following times:
@@ -33,7 +38,7 @@ At this time, Twilio notifications will not be retried if the monitoring server 
 ## Running the bot
 1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`
 2. `cd rippled_monitor`
-3. `pip install websockets prettytable twilio`
+3. `pip install -r requirements.txt`
 4. `cp settings.py.ex settings.py`
 5. Adjust `settings.py` as needed
 6. (optional) Save Twilio credentials as env variables.
