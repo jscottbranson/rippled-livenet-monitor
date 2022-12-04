@@ -118,7 +118,7 @@ class ResponseProcessor:
         '''
         Send an SMS message periodically.
         '''
-        if self.settings.ADMIN_HEARTBEAT_SMS and self.settings.SMS:
+        if self.settings.ADMIN_HEARTBEAT and self.settings.SMS:
             if time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
                 now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
                 message = str(f"rippled Livenet Monitor bot heartbeat. Server time: {now}.")
