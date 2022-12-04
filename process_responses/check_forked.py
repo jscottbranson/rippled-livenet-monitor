@@ -70,11 +70,16 @@ async def alert_resolved_forks(settings, forks, sms_queue):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     '''
     for server in forks:
-        message = str(f"Previously forked server: '{server.get('server_name')}' appears to be back in consensus.")
+        message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
-            await sms_queue.put(sms)
+            await sms_queue.put(
+                {
+                    'message': message,
+                    'phone_from': server.get('phone_from'),
+                    'phone_to': server.get('phone_to')
+                }
+            )
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
 
 async def alert_new_forks(settings, forks, sms_queue, modes):
@@ -90,8 +95,13 @@ async def alert_new_forks(settings, forks, sms_queue, modes):
         message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
-            await sms_queue.put(sms)
+            await sms_queue.put(
+                {
+                    'message': message,
+                    'phone_from': server.get('phone_from'),
+                    'phone_to': server.get('phone_to')
+                }
+            )
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
 async def check_fork_changes(old_forks, new_forks):

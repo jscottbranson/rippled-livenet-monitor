@@ -29,6 +29,7 @@ class ResponseProcessor:
         self.sms_queue = sms_queue
         self.time_last_output = 0
         self.time_fork_check = 0
+        self.last_heartbeat = time.time()
 
 
     async def process_console_output(self):
@@ -113,6 +114,24 @@ class ResponseProcessor:
                 await process_validation_output.create_table_validation(self.settings)
         logging.info("Initial stock & validator tables created. Ready to process server responses.")
 
+    async def heartbeat_message(self):
+        '''
+        Send an SMS message periodically.
+        '''
+        if self.settings.ADMIN_HEARTBEAT_SMS and self.settings.SMS:
+            if time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
+                now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+                message = str(f"rippled Livenet Monitor bot heartbeat. Server time: {now}.")
+                logging.warning(message)
+                await self.sms_queue.put(
+                    {
+                        'message': message,
+                        'phone_from': self.settings.ADMIN_PHONE_FROM,
+                        'phone_to': self.settings.ADMIN_PHONE_TO,
+                    }
+                )
+                self.last_heartbeat = time.time()
+
     async def process_messages(self):
         '''
         Listen for incoming messages and execute functions accordingly.
@@ -126,6 +145,7 @@ class ResponseProcessor:
                 await self.sort_new_messages(message)
                 await self.evaluate_forks()
                 await self.process_console_output()
+                await self.heartbeat_message()
             except KeyError as error :
                 logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
             except (asyncio.CancelledError, KeyboardInterrupt):

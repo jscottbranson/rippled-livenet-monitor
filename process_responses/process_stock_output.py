@@ -80,7 +80,7 @@ async def update_table_ledger(table, message):
             for key in server.keys():
                 if key in message['data'].keys():
                     server[key] = message['data'][key]
-            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.gmtime())
             logging.info(f"Successfully updated the table with ledger closed message from: '{server['url']}'.")
 
     return table
@@ -100,7 +100,11 @@ async def check_state_change(settings, server, message, sms_queue):
         logging.warning(message_body)
         if settings.SMS is True:
             await sms_queue.put(
-                {'phone_from': server['phone_from'], 'phone_to': server['phone_to'], 'message': message_body}
+                {
+                    'phone_from': server['phone_from'],
+                    'phone_to': server['phone_to'],
+                    'message': message_body
+                }
             )
 
 async def log_keys(message_result, table):

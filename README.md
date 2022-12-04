@@ -20,9 +20,9 @@ As written, this code will produce errors with asyncio in Python 3.9. The code i
 
 ## To-Do
 1. Check fields returned by 'server' subscription and update tables accordingly.
-2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server.
-3. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
-4. Integrate with sqlite DBs to retrieve server and contact information mappings.
+2. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
+3. Integrate with sqlite DBs to retrieve server and contact information mappings.
+4. Add regular administrator SMS messages to provide evidence the server is still running.
 
 ## SMS Notifications
 If enabled in `settings.py`, SMS notifications will be sent at the following times:
