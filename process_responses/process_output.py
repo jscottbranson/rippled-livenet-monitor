@@ -41,7 +41,7 @@ class ResponseProcessor:
            and time.time() - self.time_last_output >= self.settings.CONSOLE_REFRESH_TIME:
             os.system('clear')
             await process_stock_output.print_table_server(self.table_stock)
-            if self.settings.VALIDATOR_MASTER_KEYS or self.settings.VALIDATOR_EPH_KEYS:
+            if self.table_validator:
                 await process_validation_output.print_table_validation(self.table_validator)
             self.time_last_output = time.time()
 
@@ -50,10 +50,17 @@ class ResponseProcessor:
         Call functions to check for forked servers.
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
-            table = {}
-            table.update(self.table_validator)
-            table.update(self.table_stock)
+            table = self.table_validator + self.table_stock
             self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
+            forked_names = []
+            for fork in self.forks:
+                forked_names.append(fork['server_name'])
+            for server in self.table_stock + self.table_validator:
+                if server['server_name'] in forked_names:
+                    server['forked'] = True
+                else:
+                    server['forked'] = False
+
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):
@@ -93,6 +100,7 @@ class ResponseProcessor:
         '''
         self.val_keys = list(i['key'] for i in self.settings.VALIDATOR_MASTER_KEYS) \
                 + list(i['key'] for i in self.settings.VALIDATOR_EPH_KEYS)
+        logging.info(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
 
     async def init_variables(self):
         '''
@@ -103,6 +111,7 @@ class ResponseProcessor:
         self.table_stock = await process_stock_output.create_table_stock(self.settings)
         self.table_validator = \
                 await process_validation_output.create_table_validation(self.settings)
+        logging.info("Initial stock & validator tables created. Ready to process server responses.")
 
     async def process_messages(self):
         '''
@@ -120,8 +129,6 @@ class ResponseProcessor:
             except KeyError as error :
                 logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
             except (asyncio.CancelledError, KeyboardInterrupt):
-                #await self.message_queue.join()
-                #await self.sms_queue.join()
                 logging.critical("Keyboard interrupt detected. Response processor stopped.")
                 break
             except Exception as error:

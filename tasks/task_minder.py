@@ -54,12 +54,12 @@ def start_task_loop(settings):
                                 server , message_queue
                             )
                         ),
-                        'url': server['url'],
-                        'name': server['name'],
-                        'phone_to': None,
-                        'phone_from': None,
-                        'command': server['command'],
-                        'ssl_verify': server['ssl_verify'],
+                        'url': server.get('url'),
+                        'name': server.get('name'),
+                        'phone_to': server.get('phone_to'),
+                        'phone_from': server.get('phone_from'),
+                        'command': server.get('command'),
+                        'ssl_verify': server.get('ssl_verify'),
                         'retry_count': 0,
                     }
                     )
@@ -90,7 +90,8 @@ def start_task_loop(settings):
                 server['task'].cancel()
             for task in monitor_tasks:
                 task.cancel()
+            logging.critical("Final cleanup asyncio task loop is running.")
             loop.run_forever()
         finally:
             loop.close()
-            logging.critical("asyncio loops have been closed.")
+            logging.critical("All asyncio loops have been closed.")

@@ -18,6 +18,7 @@ This is an early stage project, so expect problems. For example, asyncio does no
 ## To-Do
 1. Check fields returned by 'server' subscription and update tables accordingly
 2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server
+3. Attempt to reconnect to servers that stop sending new last_ledger index numbers
 
 ## SMS Notifications
 If enabled in `settings.py`, SMS notifications will be sent at the following times:
