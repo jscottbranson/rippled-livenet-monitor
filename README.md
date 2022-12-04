@@ -16,14 +16,13 @@ As this tool is used to monitor the live network, it is not really useful for mo
 This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt.
 This monitoring tool is not yet intended for use in production environments (however, it does tend to be pretty stable).
 
-As written, asyncio will produce errors with Python 3.9, so this should be run with Python 3.10 or latter.
+As written, this code will produce errors with asyncio in Python 3.9. The code is tested and works with 3.10 and 3.11.
 
 ## To-Do
 1. Check fields returned by 'server' subscription and update tables accordingly.
 2. Include phone numbers as part of stock server and validator dictionaries, so individual phone numbers can be specified for each server.
 3. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
 4. Integrate with sqlite DBs to retrieve server and contact information mappings.
-5. Better asyncio that runs cleanly with Python 3.9
 
 ## SMS Notifications
 If enabled in `settings.py`, SMS notifications will be sent at the following times:
