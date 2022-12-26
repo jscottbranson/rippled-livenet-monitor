@@ -64,7 +64,7 @@ CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console out
 
 
 #### Administrative Settings ####
-ADMIN_HEARTBEAT = False # should we send SMS heartbeat messages (SMS settings
+ADMIN_HEARTBEAT_SMS = False # should we send SMS heartbeat messages (SMS settings
 # below must be enabled)
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between SMS heartbeats
 
