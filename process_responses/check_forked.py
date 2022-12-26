@@ -73,7 +73,8 @@ async def alert_resolved_forks(settings, forks, sms_queue):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     '''
     for server in forks:
-        message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus.")
+        now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+        message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus. Time UTC: {now}.")
         logging.warning(message)
         if settings.SMS is True:
             await sms_queue.put(
@@ -95,7 +96,8 @@ async def alert_new_forks(settings, forks, sms_queue, modes):
     :param list modes: Consensus modes
     '''
     for server in forks:
-        message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'.")
+        now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+        message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
         if settings.SMS is True:
             await sms_queue.put(
