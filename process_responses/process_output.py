@@ -23,6 +23,7 @@ class ResponseProcessor:
         self.table_stock = {}
         self.table_validator = {}
         self.forks = []
+        self.ll_modes = []
         self.val_keys = []
         self.processed_validations = []
         self.message_queue = message_queue
@@ -52,7 +53,7 @@ class ResponseProcessor:
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
             table = self.table_validator + self.table_stock
-            self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
+            self.ll_modes, self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
             forked_names = []
             for fork in self.forks:
                 forked_names.append(fork['server_name'])
@@ -121,7 +122,9 @@ class ResponseProcessor:
         if self.settings.ADMIN_HEARTBEAT and self.settings.SMS:
             if time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
                 now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-                message = str(f"rippled Livenet Monitor bot heartbeat. Server time: {now}.")
+                message = "rippled Livenet Monitor bot heartbeat. "
+                message = message + str(f"LL mode: {self.ll_modes[0]}. ")
+                message = message + str(f"Server time: {now}.")
                 logging.warning(message)
                 await self.sms_queue.put(
                     {

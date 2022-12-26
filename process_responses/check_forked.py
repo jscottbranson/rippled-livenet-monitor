@@ -10,6 +10,9 @@ async def calc_modes(values):
     Return the mode for a list of integers.
 
     :param list values: Integers
+
+    :return: Last ledger index modes
+    :rtype: list
     '''
     counts = {}
     for i in values:
@@ -150,6 +153,8 @@ async def fork_checker(settings, table, sms_queue, forks_old):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     :param list forks_old: Dictionaries describing each of the previously forked servers or validators
 
+    :return: Last ledger index modes
+    :return: Forked servers
     :rtype: list
     '''
     forks_new = []
@@ -166,4 +171,4 @@ async def fork_checker(settings, table, sms_queue, forks_old):
         if forks_resolved_alert:
             await alert_resolved_forks(settings, forks_resolved_alert, sms_queue)
     logging.info("Successfully checked to see if any servers are forked.")
-    return forks_new
+    return modes, forks_new
