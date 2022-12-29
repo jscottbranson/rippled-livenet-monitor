@@ -97,14 +97,20 @@ async def check_state_change(settings, server, message, sms_queue):
        and server.get('server_status') is not None:
        #and not server.get('forked'):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-        message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'. Time UTC: {now}.")
-        logging.warning(message_body)
+
+        body = "State changed for server: "
+        body = body + str(f"'{server.get('server_name')}'. ")
+        body = body + str(f"From: '{server.get('server_status')}'. ")
+        body = body + str(f"To: '{message.get('server_status')}'. ")
+        body = body + str(f"Time UTC: {now}.")
+
+        logging.warning(body)
         if settings.SMS is True:
             await sms_queue.put(
                 {
                     'phone_from': server['phone_from'],
                     'phone_to': server['phone_to'],
-                    'message': message_body
+                    'message': body
                 }
             )
 

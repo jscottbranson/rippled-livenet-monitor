@@ -3,8 +3,6 @@ import logging
 import socket
 import asyncio
 
-import requests
-
 import aiohttp
 
 

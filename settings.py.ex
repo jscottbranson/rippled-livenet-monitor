@@ -26,7 +26,7 @@ SERVERS = [
 # results).
 VALIDATOR_MASTER_KEYS = [
     {"key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)"}, "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 VALIDATOR_EPH_KEYS = [
