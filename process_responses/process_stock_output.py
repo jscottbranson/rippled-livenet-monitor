@@ -80,7 +80,7 @@ async def update_table_ledger(table, message):
             for key in server.keys():
                 if key in message['data'].keys():
                     server[key] = message['data'][key]
-            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
+            server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.gmtime())
             logging.info(f"Successfully updated the table with ledger closed message from: '{server['url']}'.")
 
     return table
@@ -94,13 +94,24 @@ async def check_state_change(settings, server, message, sms_queue):
     :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
     '''
     if server.get('server_status') != message.get('server_status') \
-       and server.get('server_status') is not None \
-       and not server.get('forked'):
-        message_body = str(f"State changed for server: '{server.get('server_name')}'. From: '{server.get('server_status')}'. To: '{message.get('server_status')}'.")
-        logging.warning(message_body)
+       and server.get('server_status') is not None:
+       #and not server.get('forked'):
+        now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+
+        body = "State changed for server: "
+        body = body + str(f"'{server.get('server_name')}'. ")
+        body = body + str(f"From: '{server.get('server_status')}'. ")
+        body = body + str(f"To: '{message.get('server_status')}'. ")
+        body = body + str(f"Time UTC: {now}.")
+
+        logging.warning(body)
         if settings.SMS is True:
             await sms_queue.put(
-                {'phone_from': server['phone_from'], 'phone_to': server['phone_to'], 'message': message_body}
+                {
+                    'phone_from': server['phone_from'],
+                    'phone_to': server['phone_to'],
+                    'message': body
+                }
             )
 
 async def log_keys(message_result, table):

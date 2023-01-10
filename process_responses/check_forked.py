@@ -10,6 +10,9 @@ async def calc_modes(values):
     Return the mode for a list of integers.
 
     :param list values: Integers
+
+    :return: Last ledger index modes
+    :rtype: list
     '''
     counts = {}
     for i in values:
@@ -70,11 +73,17 @@ async def alert_resolved_forks(settings, forks, sms_queue):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     '''
     for server in forks:
-        message = str(f"Previously forked server: '{server.get('server_name')}' appears to be back in consensus.")
+        now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+        message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus. Time UTC: {now}.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
-            await sms_queue.put(sms)
+            await sms_queue.put(
+                {
+                    'message': message,
+                    'phone_from': server.get('phone_from'),
+                    'phone_to': server.get('phone_to')
+                }
+            )
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
 
 async def alert_new_forks(settings, forks, sms_queue, modes):
@@ -87,11 +96,17 @@ async def alert_new_forks(settings, forks, sms_queue, modes):
     :param list modes: Consensus modes
     '''
     for server in forks:
-        message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'.")
+        now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+        message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
         if settings.SMS is True:
-            sms = {'message': message, 'phone_from': server.get('phone_from'), 'phone_to': server.get('phone_to')}
-            await sms_queue.put(sms)
+            await sms_queue.put(
+                {
+                    'message': message,
+                    'phone_from': server.get('phone_from'),
+                    'phone_to': server.get('phone_to')
+                }
+            )
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
 async def check_fork_changes(old_forks, new_forks):
@@ -140,6 +155,8 @@ async def fork_checker(settings, table, sms_queue, forks_old):
     :param asyncio.queues.Queue sms_queue: Outbound notification queue
     :param list forks_old: Dictionaries describing each of the previously forked servers or validators
 
+    :return: Last ledger index modes
+    :return: Forked servers
     :rtype: list
     '''
     forks_new = []
@@ -156,4 +173,4 @@ async def fork_checker(settings, table, sms_queue, forks_old):
         if forks_resolved_alert:
             await alert_resolved_forks(settings, forks_resolved_alert, sms_queue)
     logging.info("Successfully checked to see if any servers are forked.")
-    return forks_new
+    return modes, forks_new

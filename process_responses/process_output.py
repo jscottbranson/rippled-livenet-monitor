@@ -23,12 +23,14 @@ class ResponseProcessor:
         self.table_stock = {}
         self.table_validator = {}
         self.forks = []
+        self.ll_modes = []
         self.val_keys = []
         self.processed_validations = []
         self.message_queue = message_queue
         self.sms_queue = sms_queue
         self.time_last_output = 0
         self.time_fork_check = 0
+        self.last_heartbeat = time.time()
 
 
     async def process_console_output(self):
@@ -51,7 +53,7 @@ class ResponseProcessor:
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
             table = self.table_validator + self.table_stock
-            self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
+            self.ll_modes, self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
             forked_names = []
             for fork in self.forks:
                 forked_names.append(fork['server_name'])
@@ -113,6 +115,26 @@ class ResponseProcessor:
                 await process_validation_output.create_table_validation(self.settings)
         logging.info("Initial stock & validator tables created. Ready to process server responses.")
 
+    async def heartbeat_message(self):
+        '''
+        Send an SMS message periodically.
+        '''
+        if self.settings.ADMIN_HEARTBEAT_SMS and self.settings.SMS:
+            if time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
+                now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+                message = "rippled Livenet Monitor bot heartbeat. "
+                message = message + str(f"LL mode: {self.ll_modes[0]}. ")
+                message = message + str(f"Server time: {now}.")
+                logging.warning(message)
+                await self.sms_queue.put(
+                    {
+                        'message': message,
+                        'phone_from': self.settings.ADMIN_PHONE_FROM,
+                        'phone_to': self.settings.ADMIN_PHONE_TO,
+                    }
+                )
+                self.last_heartbeat = time.time()
+
     async def process_messages(self):
         '''
         Listen for incoming messages and execute functions accordingly.
@@ -126,6 +148,7 @@ class ResponseProcessor:
                 await self.sort_new_messages(message)
                 await self.evaluate_forks()
                 await self.process_console_output()
+                await self.heartbeat_message()
             except KeyError as error :
                 logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
             except (asyncio.CancelledError, KeyboardInterrupt):

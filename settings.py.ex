@@ -26,7 +26,7 @@ SERVERS = [
 # results).
 VALIDATOR_MASTER_KEYS = [
     {"key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)"}, "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 VALIDATOR_EPH_KEYS = [
@@ -62,6 +62,12 @@ CONSOLE_OUT = True # Print a fancy table to the console
 
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
 
+
+#### Administrative Settings ####
+ADMIN_HEARTBEAT_SMS = False # should we send SMS heartbeat messages (SMS settings
+# below must be enabled)
+HEARTBEAT_INTERVAL = 3600 # Time in seconds between SMS heartbeats
+
 #### SMS Settings ####
 SMS = False # Should we send SMS notifications?
 
@@ -71,6 +77,7 @@ TWILIO = False # Should notifications be sent via Twilio?
 TWILIO_ACCOUNT_SID = None
 TWILIO_AUTH_TOKEN = None
 
+# The following numbers are used to send administrative SMS messages, such as routine heartbeats
 # Numbers should be prefixed with a "+" and the country code (e.g., +1 for the USA).
-NUMBER_FROM = "+12223333"
-NUMBER_TO = "+12223333"
+ADMIN_PHONE_FROM= "+12223333"
+ADMIN_PHONE_TO = "+12223333"
