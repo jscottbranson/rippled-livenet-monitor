@@ -158,13 +158,11 @@ async def create_table_stock(settings):
     :rtype: list
     '''
     table = []
-    for server in settings.SERVERS:
-        table.append(
-            {
-                'server_name': server.get('name'),
-                'url': server.get('url'),
-                'phone_to': server.get('phone_to'),
-                'phone_from': server.get('phone_from'),
+    default_dict = {
+                'server_name': None,
+                'url': None,
+                'phone_to': None,
+                'phone_from': None,
                 'pubkey_node': None,
                 'hostid': None,
                 'fee_base': None,
@@ -186,7 +184,13 @@ async def create_table_stock(settings):
                 'txn_count': None,
                 'random': None,
                 'time_updated': None,
-            }
-        )
-    logging.info("Initial blank server table created.")
+    }
+
+    logging.info("Preparing to create initial server list.")
+    for server in settings.SERVERS:
+        server_dict = default_dict.copy()
+        for key in server_dict:
+            server_dict[key] = server.get(key)
+        table.append(server_dict)
+    logging.warning(f"Initial server list created with {len(table)} items.")
     return table

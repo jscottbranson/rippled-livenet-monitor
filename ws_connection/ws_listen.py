@@ -36,10 +36,10 @@ async def websocket_subscribe(server, message_queue):
     try:
         # Check to see if a custom SSLContext is needed to ignore cert verification
         # Establish a connection object
-        logging.info(f"Attempting to connect to: '{server['name']}'.")
+        logging.info(f"Attempting to connect to: '{server['server_name']}'.")
         async with await create_ws_object(server) as ws:
             await ws.send(json.dumps(server['command']))
-            logging.warning(f"Subscribed to: '{server['name']}' with command: '{server['command']}'.")
+            logging.warning(f"Subscribed to: '{server['server_name']}' with command: '{server['command']}'.")
             while True:
                 # Listen for response messages
                 try:
@@ -49,7 +49,7 @@ async def websocket_subscribe(server, message_queue):
                         {"server_url": server['url'], "data": data}
                     )
                 except (json.JSONDecodeError,) as error:
-                    logging.warning(f"Server: '{server['name']}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
+                    logging.warning(f"Server: '{server['server_name']}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
                 except (asyncio.CancelledError, KeyboardInterrupt):
                     logging.warning(f"Keyboard Interrupt detected. Closing websocket connection to: '{server}'.")
                     await ws.close()
@@ -69,7 +69,7 @@ async def websocket_subscribe(server, message_queue):
         websockets.exceptions.InvalidMessage,
         socket.gaierror,
     ) as error:
-        logging.warning(f"An exception: '{error}' resulted in the websocket connection to: '{server['name']}' being closed.")
+        logging.warning(f"An exception: '{error}' resulted in the websocket connection to: '{server['server_name']}' being closed.")
     except (
         websockets.exceptions.InvalidURI,
     ) as error:

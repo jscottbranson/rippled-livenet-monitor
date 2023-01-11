@@ -179,25 +179,6 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     return val_keys, table_validator, processed_validations
 
 
-async def val_dict_constructor(validator, val_dict):
-    '''
-    Insert specific keys from settings to construct the final
-    dictionary for a given validator.
-
-    :param dict validator: Settings for a given validator
-    :param val_dict: A copy of the default validator tracking dictionary
-
-    :rtype: dict
-    '''
-    logging.info(f"Beginning to construct the validator dict for {validator}.)")
-    val_dict['server_name'] = validator.get('name')
-    val_dict['phone_from'] = validator.get('phone_from')
-    val_dict['phone_to'] = validator.get('phone_to')
-    val_dict['master_key'] = validator.get('master_key')
-    val_dict['validation_public_key'] = validator.get('validation_public_key')
-    logging.info(f"Done Constructing the validator dict for {validator}.)")
-    return val_dict
-
 async def create_table_validation(settings):
     '''
     Create a dictionary with information on validators identified
@@ -226,10 +207,19 @@ async def create_table_validation(settings):
         'load_fee': None,
         'forked': None,
         'time_updated': None,
+        'server_name': None,
+        'phone_from': None,
+        'phone_to': None,
+        'master_key': None,
+        'validation_public_key': None,
     }
 
+    logging.info("Preparing to build validator dictionaries.")
     for validator in settings.VALIDATOR_MASTER_KEYS + settings.VALIDATOR_EPH_KEYS:
-        val_dict = await val_dict_constructor(validator, default_dict.copy())
+        val_dict = default_dict.copy()
+        for key in val_dict:
+            val_dict[key] = validator.get(key)
         table.append(val_dict)
+    logging.warning(f"Successfully created initial validator list with: {len(table)} items.")
 
     return table

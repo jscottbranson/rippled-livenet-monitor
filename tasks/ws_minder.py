@@ -25,7 +25,7 @@ async def queue_state_change(server, message_queue):
         }
     )
 
-    logging.info(f"Put updated state for server: '{server.get('name')}' into message processing queue.")
+    logging.info(f"Put updated state for server: '{server.get('server_name')}' into message processing queue.")
 
 async def resubscribe_client(server, message_queue):
     '''
@@ -36,7 +36,7 @@ async def resubscribe_client(server, message_queue):
     :return: The server object with a new websocket connection
     :rtype: dict
     '''
-    logging.info(f"WS connection to '{server['name']}' closed. Attempting to reconnect. Retry counter: '{server['retry_count']}'.")
+    logging.info(f"WS connection to '{server['server_name']}' closed. Attempting to reconnect. Retry counter: '{server['retry_count']}'.")
     # Pass a message to the queue indicating the server is disconnected
     await queue_state_change(server, message_queue)
     # Delete the disconnected server's task
@@ -46,7 +46,7 @@ async def resubscribe_client(server, message_queue):
     # Open the new connection
     loop = asyncio.get_event_loop()
     server['task'] = loop.create_task(websocket_subscribe(server, message_queue))
-    logging.info(f"It appears we reconnected to '{server.get('name')}'. Retry counter: '{server['retry_count']}'.")
+    logging.info(f"It appears we reconnected to '{server.get('server_name')}'. Retry counter: '{server['retry_count']}'.")
     return server
 
 async def mind_connections(settings, ws_servers, message_queue):

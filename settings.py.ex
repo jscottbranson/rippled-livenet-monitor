@@ -13,9 +13,9 @@ LOG_LEVEL = logging.WARNING # How verbose should the logs be ("INFO", "WARNING",
 # the probability of a false missed validation from a below validator decreases
 # (in other words, validation monitoring gets more accurate with more stock servers).
 SERVERS = [
-    {"url": "wss://xrplcluster.com:443", "name": "Cluster", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"url": "wss://s1.ripple.com:443", "name": "Ripple-S1", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"url": "wss://s2.ripple.com:443", "name": "Ripple-S2", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"url": "wss://xrplcluster.com:443", "server_name": "Cluster", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"url": "wss://s1.ripple.com:443", "server_name": "Ripple-S1", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"url": "wss://s2.ripple.com:443", "server_name": "Ripple-S2", "ssl_verify": True, "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 # A list of dicts with validation public keys to monitor for missed validations
@@ -25,13 +25,13 @@ SERVERS = [
 # (although inclusion of one server in both lists shouldn't produce duplicate
 # results).
 VALIDATOR_MASTER_KEYS = [
-    {"master_key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"master_key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"master_key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "server_name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"master_key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "server_name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 VALIDATOR_EPH_KEYS = [
-    {"validation_public_key": "n9Kb81J9kqGgYkrNDRSPT3UCgz8Bei1CPHGMt85yxz9mUSvuzV5k", "name": "Coil.com (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"validation_public_key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "name": "Gatehub.net (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"validation_public_key": "n9Kb81J9kqGgYkrNDRSPT3UCgz8Bei1CPHGMt85yxz9mUSvuzV5k", "server_name": "Coil.com (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"validation_public_key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "server_name": "Gatehub.net (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 WS_RETRY = 20 # number of seconds to wait between dropped WS connection checks

@@ -55,7 +55,7 @@ def start_task_loop(settings):
                             )
                         ),
                         'url': server.get('url'),
-                        'name': server.get('name'),
+                        'server_name': server.get('server_name'),
                         'phone_to': server.get('phone_to'),
                         'phone_from': server.get('phone_from'),
                         'command': server.get('command'),
