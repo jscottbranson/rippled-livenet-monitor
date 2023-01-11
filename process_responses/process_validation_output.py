@@ -178,6 +178,26 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
 
     return val_keys, table_validator, processed_validations
 
+
+async def val_dict_constructor(validator, val_dict):
+    '''
+    Insert specific keys from settings to construct the final
+    dictionary for a given validator.
+
+    :param dict validator: Settings for a given validator
+    :param val_dict: A copy of the default validator tracking dictionary
+
+    :rtype: dict
+    '''
+    logging.info(f"Beginning to construct the validator dict for {validator}.)")
+    val_dict['server_name'] = validator.get('name')
+    val_dict['phone_from'] = validator.get('phone_from')
+    val_dict['phone_to'] = validator.get('phone_to')
+    val_dict['master_key'] = validator.get('master_key')
+    val_dict['validation_public_key'] = validator.get('validation_public_key')
+    logging.info(f"Done Constructing the validator dict for {validator}.)")
+    return val_dict
+
 async def create_table_validation(settings):
     '''
     Create a dictionary with information on validators identified
@@ -190,50 +210,26 @@ async def create_table_validation(settings):
     :rtype: list
     '''
     table = []
-    for validator in settings.VALIDATOR_MASTER_KEYS:
-        table.append({
-            'server_name': validator['name'],
-            'phone_from': validator.get('phone_from'),
-            'phone_to': validator.get('phone_to'),
-            'cookie': None,
-            'server_version': None,
-            'base_fee': None,
-            'reserve_base': None,
-            'reserve_inc': None,
-            'full': None,
-            'ledger_hash': None,
-            'validated_hash': None,
-            'ledger_index': None,
-            'signature': None,
-            'signing_time': None,
-            'load_fee': None,
-            'forked': None,
-            'master_key': validator['key'],
-            'validation_public_key': None,
-            'time_updated': None,
-        })
 
-    for validator in settings.VALIDATOR_EPH_KEYS:
-        table.append({
-            'server_name': validator['name'],
-            'phone_from': validator.get('phone_from'),
-            'phone_to': validator.get('phone_to'),
-            'cookie': None,
-            'server_version': None,
-            'base_fee': None,
-            'reserve_base': None,
-            'reserve_inc': None,
-            'full': None,
-            'ledger_hash': None,
-            'validated_hash': None,
-            'ledger_index': None,
-            'signature': None,
-            'signing_time': None,
-            'load_fee': None,
-            'forked': None,
-            'master_key': None,
-            'validation_public_key': validator['key'],
-            'time_updated': None,
-        })
+    default_dict = {
+        'cookie': None,
+        'server_version': None,
+        'base_fee': None,
+        'reserve_base': None,
+        'reserve_inc': None,
+        'full': None,
+        'ledger_hash': None,
+        'validated_hash': None,
+        'ledger_index': None,
+        'signature': None,
+        'signing_time': None,
+        'load_fee': None,
+        'forked': None,
+        'time_updated': None,
+    }
+
+    for validator in settings.VALIDATOR_MASTER_KEYS + settings.VALIDATOR_EPH_KEYS:
+        val_dict = await val_dict_constructor(validator, default_dict.copy())
+        table.append(val_dict)
 
     return table

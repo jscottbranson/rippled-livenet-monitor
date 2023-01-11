@@ -25,13 +25,13 @@ SERVERS = [
 # (although inclusion of one server in both lists shouldn't produce duplicate
 # results).
 VALIDATOR_MASTER_KEYS = [
-    {"key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"master_key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"master_key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 VALIDATOR_EPH_KEYS = [
-    {"key": "n9Kb81J9kqGgYkrNDRSPT3UCgz8Bei1CPHGMt85yxz9mUSvuzV5k", "name": "Coil.com (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
-    {"key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "name": "Gatehub.net (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"validation_public_key": "n9Kb81J9kqGgYkrNDRSPT3UCgz8Bei1CPHGMt85yxz9mUSvuzV5k", "name": "Coil.com (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
+    {"validation_public_key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "name": "Gatehub.net (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]
 
 WS_RETRY = 20 # number of seconds to wait between dropped WS connection checks
