@@ -27,10 +27,10 @@ async def format_table_server(table):
                 server['server_status'] = green + server['server_status'] + color_reset
             else:
                 server['server_status'] = red + server['server_status'] + color_reset
-        if server['forked']:
-            server['forked'] = red + str(server['forked']) + color_reset
-        else:
+        if server['forked'] is False:
             server['forked'] = green + str(server['forked']) + color_reset
+        else:
+            server['forked'] = red + str(server['forked']) + color_reset
     return table
 
 async def print_table_server(table):
@@ -181,6 +181,7 @@ async def create_table_stock(settings):
                 'ledger_hash': None,
                 'ledger_time':None,
                 'forked': None,
+                'time_forked': None,
                 'txn_count': None,
                 'random': None,
                 'time_updated': None,

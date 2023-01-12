@@ -26,10 +26,10 @@ async def format_table_validation(table):
             validator['ledger_hash'] = validator['ledger_hash'][:5]
         if isinstance(validator['validated_hash'], str):
             validator['validated_hash'] = validator['validated_hash'][:5]
-        if validator['forked']:
-            validator['forked'] = red + str(validator['forked']) + color_reset
-        else:
+        if validator['forked'] is False:
             validator['forked'] = green + str(validator['forked']) + color_reset
+        else:
+            validator['forked'] = red + str(validator['forked']) + color_reset
         if validator['full']:
             validator['full'] = green + str(validator['full']) + color_reset
         else:
@@ -206,6 +206,7 @@ async def create_table_validation(settings):
         'signing_time': None,
         'load_fee': None,
         'forked': None,
+        'time_forked': None,
         'time_updated': None,
         'server_name': None,
         'phone_from': None,
