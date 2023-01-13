@@ -8,6 +8,8 @@ from copy import deepcopy
 
 from prettytable import PrettyTable
 
+from .xrpl_version_decoder import decode_version
+
 async def format_table_validation(table):
     '''
     Format output for the validation table, so it's human friendly.
@@ -34,6 +36,10 @@ async def format_table_validation(table):
             validator['full'] = green + str(validator['full']) + color_reset
         else:
             validator['full'] = red + str(validator['full']) + color_reset
+        if isinstance(validator['server_version'], str):
+            if validator['server_version'][0:].isdigit():
+                server_version = await decode_version(validator['server_version'])
+                validator['server_version'] = server_version.get('version')
     return table
 
 async def print_table_validation(table):

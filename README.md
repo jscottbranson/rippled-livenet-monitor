@@ -38,7 +38,7 @@ At this time, Twilio notifications will not be retried if the monitoring server 
 1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`
 2. `cd rippled_monitor`
 3. `pip install -r requirements.txt`
-4. `cp settings.py.ex settings.py`
+4. `cp settings_ex.py settings.py`
 5. Adjust `settings.py` as needed
 6. (optional) Save Twilio credentials as env variables.
 7. `python3 main.py`
@@ -46,4 +46,4 @@ At this time, Twilio notifications will not be retried if the monitoring server 
 ## Updating
 1. `cd rippled_monitor`
 2. ` git pull`
-3. This project is early stage, so it's important to check for new settings in `settings.py.ex` after updating.
+3. This project is early stage, so it's important to check for new settings in `settings_ex.py` after updating.
