@@ -15,7 +15,7 @@ def get_command(settings, val_stream_count):
     '''
     Only subscribe to the validation stream if necessary.
     '''
-    if not settings.VALIDATOR_MASTER_KEYS and not settings.VALIDATOR_EPH_KEYS:
+    if not settings.VALIDATOR_KEYS:
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
     elif val_stream_count >= settings.MAX_VAL_STREAMS:
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}

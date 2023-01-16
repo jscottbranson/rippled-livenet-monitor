@@ -222,7 +222,7 @@ async def create_table_validation(settings):
     }
 
     logging.info("Preparing to build validator dictionaries.")
-    for validator in settings.VALIDATOR_MASTER_KEYS + settings.VALIDATOR_EPH_KEYS:
+    for validator in settings.VALIDATOR_KEYS:
         val_dict = default_dict.copy()
         for key in val_dict:
             val_dict[key] = validator.get(key)

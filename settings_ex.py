@@ -24,12 +24,9 @@ SERVERS = [
 # Keys should be included in either the master or eph keys list, not both
 # (although inclusion of one server in both lists shouldn't produce duplicate
 # results).
-VALIDATOR_MASTER_KEYS = [
+VALIDATOR_KEYS = [
     {"master_key": "nHDwHQGjKTz6R6pFigSSrNBrhNYyUGFPHA75HiTccTCQzuu9d7Za", "server_name": "Coil.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
     {"master_key": "nHU4bLE3EmSqNwfL4AP1UZeTNPrSPPP6FXLKXo2uqfHuvBQxDVKd", "server_name": "Ripple.com (master)", "phone_from": "+19000000", "phone_to": "+10000000"},
-]
-
-VALIDATOR_EPH_KEYS = [
     {"validation_public_key": "n9Kb81J9kqGgYkrNDRSPT3UCgz8Bei1CPHGMt85yxz9mUSvuzV5k", "server_name": "Coil.com (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
     {"validation_public_key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "server_name": "Gatehub.net (eph)", "phone_from": "+19000000", "phone_to": "+10000000"},
 ]

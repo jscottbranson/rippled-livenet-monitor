@@ -90,9 +90,13 @@ class ResponseProcessor:
         '''
         Create a list of all potential keys for validators we are monitoring.
         '''
-        self.val_keys = list(i['master_key'] for i in self.settings.VALIDATOR_MASTER_KEYS) \
-                + list(i['validation_public_key'] for i in self.settings.VALIDATOR_EPH_KEYS)
-        logging.info(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
+        val_keys = list(i.get('master_key') for i in self.settings.VALIDATOR_KEYS) \
+                + list(i.get('validation_public_key') for i in self.settings.VALIDATOR_KEYS)
+
+        for i in val_keys:
+            if i:
+                self.val_keys.append(i)
+        logging.warning(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
 
     async def init_variables(self):
         '''
