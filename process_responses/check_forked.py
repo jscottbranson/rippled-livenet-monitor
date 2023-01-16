@@ -3,6 +3,7 @@ Check for servers whose last ledger index number is outside of a tolerable range
 '''
 import time
 import logging
+from copy import deepcopy
 import asyncio
 
 async def calc_modes(values):
@@ -51,7 +52,8 @@ async def check_diff_mode(settings, table, modes):
         index = server.get('ledger_index')
         if index and server.get('server_status') != "disconnected from monitoring":
             if abs(int(modes[0]) - int(index)) > settings.LL_FORK_CUTOFF:
-                server['time_forked'] = time.time()
+                if not server.get('forked'):
+                    server['time_forked'] = time.time()
                 server['forked'] = True
             else:
                 server['time_forked'] = None
@@ -119,9 +121,11 @@ async def check_fork_changes(old_tables, new_tables):
     old_tables = old_tables[0] + old_tables[1]
     new_tables = new_tables[0] + new_tables[1]
 
+
     for old_server in old_tables:
         for new_server in new_tables:
-            if old_server['server_name'] == new_server['server_name'] and old_server['forked'] != new_server['forked']:
+            if old_server.get('server_name') is new_server.get('server_name') \
+               and old_server.get('forked') is not new_server.get('forked'):
                 if old_server['forked'] is False:
                     forks_new.append(new_server)
                 elif old_server['forked'] is True:
@@ -144,10 +148,10 @@ async def fork_checker(settings, table_stock, table_validator, sms_queue):
     :rtype: list
     '''
     logging.info("Checking to see if any servers are forked.")
-    previous_tables = [table_stock.copy(), table_validator.copy()]
+    previous_tables = [deepcopy(table_stock), deepcopy(table_validator)]
     modes = await get_modes(table_stock + table_validator)
     if modes and len(modes) > 1:
-        logging.warning(f"Multiple modes found for last ledger indexes: '{modes}'. Skipping fork check.")
+        logging.info(f"Multiple modes found for last ledger indexes: '{modes}'. Skipping fork check.")
     else:
         table_stock = await check_diff_mode(settings, table_stock, modes)
         table_validator = await check_diff_mode(settings, table_validator, modes)
