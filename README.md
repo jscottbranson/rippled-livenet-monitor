@@ -19,18 +19,20 @@ This monitoring tool is not yet intended for use in production environments (how
 As written, this code will produce errors with asyncio in Python 3.9. The code is tested and works with 3.10 and 3.11.
 
 ## To-Do
-1. Check fields returned by 'server' subscription and update tables accordingly.
-2. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
+1. Check fields returned by 'server' subscription and update tables accordingly (additional fields are currently logged at the warning level).
+2. Attempt to reconnect to servers that stop sending new last_ledger index numbers (and send an admin warning if all servers stop advancing).
 3. Integrate with sqlite DBs to retrieve server and contact information mappings.
-4. Add regular administrator SMS messages to provide evidence the server is still running.
+4. Consider multithreading the websocket connections and output processor.
+5. Consider integrating websocket connection information into the stock server tables.
+6. Support Discord, Slack, Mattermost, and email notifications.
 
-## SMS Notifications
-If enabled in `settings.py`, SMS notifications will be sent at the following times:
-1. Any server disconnect and again on reconnect
+## Notifications
+If enabled in `settings.py`, notifications will be sent at the following times:
+1. When a server disconnects and/or reconnects
 2. When the state for a subscribed server changes
 3. When a subscribed server or a monitored validator is more than n ledgers (specified in `settings.py`) ahead of or behind the rest of the network
 4. (coming later) When latency is dangerously high between monitoring bot and the remote server
-5. (maybe coming) When a validator sends a partial validation
+5. Administrators can receive heartbeat messages as specified in `settings.py`
 
 At this time, Twilio notifications will not be retried if the monitoring server is unable to reach the Twilio API. This functionality can be easily integrated in the future by passing the messages back into the sms_queue.
 
@@ -38,12 +40,12 @@ At this time, Twilio notifications will not be retried if the monitoring server 
 1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`
 2. `cd rippled_monitor`
 3. `pip install -r requirements.txt`
-4. `cp settings.py.ex settings.py`
+4. `cp settings_ex.py settings.py`
 5. Adjust `settings.py` as needed
-6. (optional) Save Twilio credentials as env variables.
+6. (optional) Save notification credentials as env variables.
 7. `python3 main.py`
 
 ## Updating
 1. `cd rippled_monitor`
 2. ` git pull`
-3. This project is early stage, so it's important to check for new settings in `settings.py.ex` after updating.
+3. This project is early stage, so it's important to check for new settings in `settings_ex.py` after updating.

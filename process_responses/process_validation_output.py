@@ -8,6 +8,8 @@ from copy import deepcopy
 
 from prettytable import PrettyTable
 
+from .xrpl_version_decoder import decode_version
+
 async def format_table_validation(table):
     '''
     Format output for the validation table, so it's human friendly.
@@ -26,14 +28,18 @@ async def format_table_validation(table):
             validator['ledger_hash'] = validator['ledger_hash'][:5]
         if isinstance(validator['validated_hash'], str):
             validator['validated_hash'] = validator['validated_hash'][:5]
-        if validator['forked']:
-            validator['forked'] = red + str(validator['forked']) + color_reset
-        else:
+        if validator['forked'] is False:
             validator['forked'] = green + str(validator['forked']) + color_reset
+        else:
+            validator['forked'] = red + str(validator['forked']) + color_reset
         if validator['full']:
             validator['full'] = green + str(validator['full']) + color_reset
         else:
             validator['full'] = red + str(validator['full']) + color_reset
+        if isinstance(validator['server_version'], str):
+            if validator['server_version'][0:].isdigit():
+                server_version = await decode_version(validator['server_version'])
+                validator['server_version'] = server_version.get('version')
     return table
 
 async def print_table_validation(table):
@@ -178,6 +184,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
 
     return val_keys, table_validator, processed_validations
 
+
 async def create_table_validation(settings):
     '''
     Create a dictionary with information on validators identified
@@ -190,50 +197,36 @@ async def create_table_validation(settings):
     :rtype: list
     '''
     table = []
-    for validator in settings.VALIDATOR_MASTER_KEYS:
-        table.append({
-            'server_name': validator['name'],
-            'phone_from': validator.get('phone_from'),
-            'phone_to': validator.get('phone_to'),
-            'cookie': None,
-            'server_version': None,
-            'base_fee': None,
-            'reserve_base': None,
-            'reserve_inc': None,
-            'full': None,
-            'ledger_hash': None,
-            'validated_hash': None,
-            'ledger_index': None,
-            'signature': None,
-            'signing_time': None,
-            'load_fee': None,
-            'forked': None,
-            'master_key': validator['key'],
-            'validation_public_key': None,
-            'time_updated': None,
-        })
 
-    for validator in settings.VALIDATOR_EPH_KEYS:
-        table.append({
-            'server_name': validator['name'],
-            'phone_from': validator.get('phone_from'),
-            'phone_to': validator.get('phone_to'),
-            'cookie': None,
-            'server_version': None,
-            'base_fee': None,
-            'reserve_base': None,
-            'reserve_inc': None,
-            'full': None,
-            'ledger_hash': None,
-            'validated_hash': None,
-            'ledger_index': None,
-            'signature': None,
-            'signing_time': None,
-            'load_fee': None,
-            'forked': None,
-            'master_key': None,
-            'validation_public_key': validator['key'],
-            'time_updated': None,
-        })
+    default_dict = {
+        'cookie': None,
+        'server_version': None,
+        'base_fee': None,
+        'reserve_base': None,
+        'reserve_inc': None,
+        'full': None,
+        'ledger_hash': None,
+        'validated_hash': None,
+        'ledger_index': None,
+        'signature': None,
+        'signing_time': None,
+        'load_fee': None,
+        'forked': None,
+        'time_forked': None,
+        'time_updated': None,
+        'server_name': None,
+        'phone_from': None,
+        'phone_to': None,
+        'master_key': None,
+        'validation_public_key': None,
+    }
+
+    logging.info("Preparing to build validator dictionaries.")
+    for validator in settings.VALIDATOR_KEYS:
+        val_dict = default_dict.copy()
+        for key in val_dict:
+            val_dict[key] = validator.get(key)
+        table.append(val_dict)
+    logging.warning(f"Successfully created initial validator list with: {len(table)} items.")
 
     return table

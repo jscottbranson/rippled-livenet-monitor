@@ -52,17 +52,7 @@ class ResponseProcessor:
         Call functions to check for forked servers.
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
-            table = self.table_validator + self.table_stock
-            self.ll_modes, self.forks = await fork_checker(self.settings, table, self.sms_queue, self.forks)
-            forked_names = []
-            for fork in self.forks:
-                forked_names.append(fork['server_name'])
-            for server in self.table_stock + self.table_validator:
-                if server['server_name'] in forked_names:
-                    server['forked'] = True
-                else:
-                    server['forked'] = False
-
+            self.ll_modes, self.table_stock, self.table_validator = await fork_checker(self.settings, self.table_stock, self.table_validator, self.sms_queue)
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):
@@ -100,9 +90,13 @@ class ResponseProcessor:
         '''
         Create a list of all potential keys for validators we are monitoring.
         '''
-        self.val_keys = list(i['key'] for i in self.settings.VALIDATOR_MASTER_KEYS) \
-                + list(i['key'] for i in self.settings.VALIDATOR_EPH_KEYS)
-        logging.info(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
+        val_keys = list(i.get('master_key') for i in self.settings.VALIDATOR_KEYS) \
+                + list(i.get('validation_public_key') for i in self.settings.VALIDATOR_KEYS)
+
+        for i in val_keys:
+            if i:
+                self.val_keys.append(i)
+        logging.warning(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
 
     async def init_variables(self):
         '''

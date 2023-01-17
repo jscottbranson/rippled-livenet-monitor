@@ -27,10 +27,10 @@ async def format_table_server(table):
                 server['server_status'] = green + server['server_status'] + color_reset
             else:
                 server['server_status'] = red + server['server_status'] + color_reset
-        if server['forked']:
-            server['forked'] = red + str(server['forked']) + color_reset
-        else:
+        if server['forked'] is False:
             server['forked'] = green + str(server['forked']) + color_reset
+        else:
+            server['forked'] = red + str(server['forked']) + color_reset
     return table
 
 async def print_table_server(table):
@@ -158,13 +158,11 @@ async def create_table_stock(settings):
     :rtype: list
     '''
     table = []
-    for server in settings.SERVERS:
-        table.append(
-            {
-                'server_name': server.get('name'),
-                'url': server.get('url'),
-                'phone_to': server.get('phone_to'),
-                'phone_from': server.get('phone_from'),
+    default_dict = {
+                'server_name': None,
+                'url': None,
+                'phone_to': None,
+                'phone_from': None,
                 'pubkey_node': None,
                 'hostid': None,
                 'fee_base': None,
@@ -183,10 +181,17 @@ async def create_table_stock(settings):
                 'ledger_hash': None,
                 'ledger_time':None,
                 'forked': None,
+                'time_forked': None,
                 'txn_count': None,
                 'random': None,
                 'time_updated': None,
-            }
-        )
-    logging.info("Initial blank server table created.")
+    }
+
+    logging.info("Preparing to create initial server list.")
+    for server in settings.SERVERS:
+        server_dict = default_dict.copy()
+        for key in server_dict:
+            server_dict[key] = server.get(key)
+        table.append(server_dict)
+    logging.warning(f"Initial server list created with {len(table)} items.")
     return table
