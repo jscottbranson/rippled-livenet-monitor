@@ -13,15 +13,16 @@ async def create_ws_object(server):
     :param dict server: URL and SSL certificate verification settings
     :return: A websocket connection
     '''
-    if server['ssl_verify'] is False and server['url'][0:4].lower() == 'wss:':
+    if server.get('ssl_verify') is False and server['url'][0:4].lower() == 'wss:':
         ssl_context = ssl.SSLContext()
         ssl_context.verify_mode = ssl.CERT_NONE
-        return websockets.connect(server['url'], ssl=ssl_context)
+        connection = websockets.connect(server.get('url'), ssl=ssl_context)
     elif server['ssl_verify'] is True or server['url'][0:3].lower() == 'ws:':
-        return websockets.connect(server['url'])
+        connection = websockets.connect(server.get('url'))
     else:
         logging.error(f"Error determining SSL/TLS settings for server: '{server}'.")
-        return None
+        connection = None
+    return connection
 
 async def websocket_subscribe(server, message_queue):
     '''
@@ -36,20 +37,20 @@ async def websocket_subscribe(server, message_queue):
     try:
         # Check to see if a custom SSLContext is needed to ignore cert verification
         # Establish a connection object
-        logging.info(f"Attempting to connect to: '{server['server_name']}'.")
+        logging.info(f"Attempting to connect to: '{server.get('server_name')}'.")
         async with await create_ws_object(server) as ws:
             await ws.send(json.dumps(server['command']))
-            logging.warning(f"Subscribed to: '{server['server_name']}' with command: '{server['command']}'.")
+            logging.warning(f"Subscribed to: '{server.get('server_name')}' with command: '{server.get('command')}'.")
             while True:
                 # Listen for response messages
                 try:
                     data = await ws.recv()
                     data = json.loads(data)
                     await message_queue.put(
-                        {"server_url": server['url'], "data": data}
+                        {"server_url": server.get('url'), "data": data}
                     )
                 except (json.JSONDecodeError,) as error:
-                    logging.warning(f"Server: '{server['server_name']}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
+                    logging.warning(f"Server: '{server.get('server_name')}'. Unable to decode JSON: '{data}'. Error: '{error}'.")
                 except (asyncio.CancelledError, KeyboardInterrupt):
                     logging.warning(f"Keyboard Interrupt detected. Closing websocket connection to: '{server}'.")
                     await ws.close()
@@ -69,7 +70,7 @@ async def websocket_subscribe(server, message_queue):
         websockets.exceptions.InvalidMessage,
         socket.gaierror,
     ) as error:
-        logging.warning(f"An exception: '{error}' resulted in the websocket connection to: '{server['server_name']}' being closed.")
+        logging.warning(f"An exception: '{error}' resulted in the websocket connection to: '{server.get('server_name')}' being closed.")
     except (
         websockets.exceptions.InvalidURI,
     ) as error:

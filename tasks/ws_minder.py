@@ -36,7 +36,7 @@ async def resubscribe_client(server, message_queue):
     :return: The server object with a new websocket connection
     :rtype: dict
     '''
-    logging.info(f"WS connection to '{server['server_name']}' closed. Attempting to reconnect. Retry counter: '{server['retry_count']}'.")
+    logging.info(f"WS connection to '{server.get('server_name')}' closed. Attempting to reconnect. Retry counter: '{server.get('retry_count')}'.")
     # Pass a message to the queue indicating the server is disconnected
     await queue_state_change(server, message_queue)
     # Delete the disconnected server's task
