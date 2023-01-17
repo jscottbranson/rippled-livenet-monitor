@@ -124,7 +124,7 @@ async def check_fork_changes(old_tables, new_tables):
 
     for old_server in old_tables:
         for new_server in new_tables:
-            if old_server.get('server_name') is new_server.get('server_name') \
+            if old_server.get('master_key') is new_server.get('master_key') \
                and old_server.get('forked') is not new_server.get('forked'):
                 if old_server['forked'] is False:
                     forks_new.append(new_server)
