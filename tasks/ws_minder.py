@@ -46,7 +46,7 @@ async def resubscribe_client(server, message_queue):
     # Open the new connection
     loop = asyncio.get_event_loop()
     server['task'] = loop.create_task(websocket_subscribe(server, message_queue))
-    logging.info(f"It appears we reconnected to '{server.get('server_name')}'. Retry counter: '{server['retry_count']}'.")
+    logging.warning(f"It appears we reconnected to '{server.get('server_name')}'. Retry counter: '{server['retry_count']}'.")
     return server
 
 async def mind_connections(settings, ws_servers, message_queue):
