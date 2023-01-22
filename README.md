@@ -34,7 +34,7 @@ If enabled in `settings.py`, notifications will be sent at the following times:
 4. (coming later) When latency is dangerously high between monitoring bot and the remote server
 5. Administrators can receive heartbeat messages as specified in `settings.py`
 
-At this time, Twilio notifications will not be retried if the monitoring server is unable to reach the Twilio API. This functionality can be easily integrated in the future by passing the messages back into the sms_queue.
+At this time, Twilio notifications will not be retried if the monitoring server is unable to reach the Twilio API. This functionality can be easily integrated in the future by passing the messages back into the notification_queue.
 
 ## Running the bot
 1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`

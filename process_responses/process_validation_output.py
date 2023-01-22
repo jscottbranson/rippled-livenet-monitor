@@ -215,17 +215,17 @@ async def create_table_validation(settings):
         'time_forked': None,
         'time_updated': None,
         'server_name': None,
-        'phone_from': None,
-        'phone_to': None,
+        'notifications': None,
         'master_key': None,
         'validation_public_key': None,
     }
 
     logging.info("Preparing to build validator dictionaries.")
-    for validator in settings.VALIDATOR_KEYS:
+    for validator in settings.VALIDATORS:
         val_dict = default_dict.copy()
         for key in val_dict:
-            val_dict[key] = validator.get(key)
+            if key in validator:
+                val_dict[key] = validator.get(key)
         table.append(val_dict)
     logging.warning(f"Successfully created initial validator list with: {len(table)} items.")
 

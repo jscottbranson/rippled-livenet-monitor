@@ -15,7 +15,7 @@ def get_command(settings, val_stream_count):
     '''
     Only subscribe to the validation stream if necessary.
     '''
-    if not settings.VALIDATOR_KEYS:
+    if not settings.VALIDATORS:
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
     elif val_stream_count >= settings.MAX_VAL_STREAMS:
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
@@ -35,7 +35,7 @@ def start_task_loop(settings):
     monitor_tasks = []
     val_stream_count = 0
     message_queue = asyncio.Queue(maxsize=999999999)
-    sms_queue = asyncio.Queue(maxsize=100000)
+    notification_queue = asyncio.Queue(maxsize=100000)
 
     if settings.ASYNCIO_DEBUG is True:
         loop.set_debug(True)
@@ -72,13 +72,13 @@ def start_task_loop(settings):
 
             monitor_tasks.append(
                 loop.create_task(
-                    ResponseProcessor(settings, message_queue, sms_queue).process_messages()
+                    ResponseProcessor(settings, message_queue, notification_queue).process_messages()
                 )
             )
 
             monitor_tasks.append(
                 loop.create_task(
-                    notifications(settings, sms_queue)
+                    notifications(settings, notification_queue)
                 )
             )
 

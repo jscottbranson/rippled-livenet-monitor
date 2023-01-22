@@ -85,17 +85,16 @@ async def update_table_ledger(table, message):
 
     return table
 
-async def check_state_change(settings, server, message, sms_queue):
+async def check_state_change(server, message, notification_queue):
     '''
     Check if the server's state changed from the last known state.
 
     :param list table: Dictionary for each server being tracked (previous state information)
     :param dict message: Message with new information about the server
-    :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
+    :param asyncio.queues.Queue notification_queue: Outbound message queue
     '''
     if server.get('server_status') != message.get('server_status') \
        and server.get('server_status') is not None:
-       #and not server.get('forked'):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
 
         body = "State changed for server: "
@@ -105,14 +104,12 @@ async def check_state_change(settings, server, message, sms_queue):
         body = body + str(f"Time UTC: {now}.")
 
         logging.warning(body)
-        if settings.SMS is True:
-            await sms_queue.put(
-                {
-                    'phone_from': server['phone_from'],
-                    'phone_to': server['phone_to'],
-                    'message': body
-                }
-            )
+        await notification_queue.put(
+            {
+                'message': body,
+                'server': server,
+            }
+        )
 
 async def log_keys(message_result, table):
     '''
@@ -123,13 +120,13 @@ async def log_keys(message_result, table):
         if key not in table[0]:
             logging.warning(f"new server subscription key found: '{key}'.")
 
-async def update_table_server(settings, table, sms_queue, message):
+async def update_table_server(table, notification_queue, message):
     '''
     Add info contained in new messages to the table.
 
     :param settings: Config file
     :param list table: Dictionary for each server being tracked
-    :param asyncio.queues.Queue sms_queue: Message queue to send via SMS
+    :param asyncio.queues.Queue notification_queue: Message queue to send via SMS
     :param dict message: New server subscription message
     '''
     logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
@@ -139,7 +136,7 @@ async def update_table_server(settings, table, sms_queue, message):
 
     for server in table:
         if server['url'] is message['server_url']:
-            await check_state_change(settings, server, message_result, sms_queue)
+            await check_state_change(server, message_result, notification_queue)
             for key in server.keys():
                 if key in message_result.keys():
                     server[key] = message_result[key]
@@ -159,39 +156,40 @@ async def create_table_stock(settings):
     '''
     table = []
     default_dict = {
-                'server_name': None,
-                'url': None,
-                'phone_to': None,
-                'phone_from': None,
-                'pubkey_node': None,
-                'hostid': None,
-                'fee_base': None,
-                'fee_ref': None,
-                'load_base': None,
-                'reserve_base': None,
-                'reserve_inc': None,
-                'load_factor': None,
-                #'load_factor_fee_escalation': None,
-                #'load_factor_fee_queue': None,
-                'load_factor_fee_reference': None,
-                'load_factor_server': None,
-                'server_status': None,
-                'validated_ledgers': None,
-                'ledger_index': None,
-                'ledger_hash': None,
-                'ledger_time':None,
-                'forked': None,
-                'time_forked': None,
-                'txn_count': None,
-                'random': None,
-                'time_updated': None,
+        'server_name': None,
+        'url': None,
+        'ssl_verify': None,
+        'notifications': None,
+        'pubkey_node': None,
+        'hostid': None,
+        'fee_base': None,
+        'fee_ref': None,
+        'load_base': None,
+        'reserve_base': None,
+        'reserve_inc': None,
+        'load_factor': None,
+        #'load_factor_fee_escalation': None,
+        #'load_factor_fee_queue': None,
+        'load_factor_fee_reference': None,
+        'load_factor_server': None,
+        'server_status': None,
+        'validated_ledgers': None,
+        'ledger_index': None,
+        'ledger_hash': None,
+        'ledger_time':None,
+        'forked': None,
+        'time_forked': None,
+        'txn_count': None,
+        'random': None,
+        'time_updated': None,
     }
 
-    logging.info("Preparing to create initial server list.")
+    logging.warning("Preparing to create initial server list.")
     for server in settings.SERVERS:
-        server_dict = default_dict.copy()
+        server_dict = deepcopy(default_dict)
         for key in server_dict:
-            server_dict[key] = server.get(key)
+            if key in server:
+                server_dict[key] = server.get(key)
         table.append(server_dict)
     logging.warning(f"Initial server list created with {len(table)} items.")
     return table

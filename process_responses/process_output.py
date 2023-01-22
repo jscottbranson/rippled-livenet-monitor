@@ -16,9 +16,9 @@ class ResponseProcessor:
 
     :param settings: Config file
     :param asyncio.queues.Queue message_queue: Incoming websocket messages
-    :param asyncio.queues.Queue sms_queue: Outbound SMS messages
+    :param asyncio.queues.Queue notification_queue: Outbound SMS messages
     '''
-    def __init__(self, settings, message_queue, sms_queue):
+    def __init__(self, settings, message_queue, notification_queue):
         self.settings = settings
         self.table_stock = {}
         self.table_validator = {}
@@ -27,7 +27,7 @@ class ResponseProcessor:
         self.val_keys = []
         self.processed_validations = []
         self.message_queue = message_queue
-        self.sms_queue = sms_queue
+        self.notification_queue = notification_queue
         self.time_last_output = 0
         self.time_fork_check = 0
         self.last_heartbeat = time.time()
@@ -52,7 +52,7 @@ class ResponseProcessor:
         Call functions to check for forked servers.
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
-            self.ll_modes, self.table_stock, self.table_validator = await fork_checker(self.settings, self.table_stock, self.table_validator, self.sms_queue)
+            self.ll_modes, self.table_stock, self.table_validator = await fork_checker(self.settings, self.table_stock, self.table_validator, self.notification_queue)
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):
@@ -65,7 +65,7 @@ class ResponseProcessor:
         if 'result' in message['data']:
             self.table_stock = \
                     await process_stock_output.update_table_server(
-                        self.settings, self.table_stock, self.sms_queue, message
+                        self.table_stock, self.notification_queue, message
                     )
 
         # Check for ledger subscription messages
@@ -90,8 +90,8 @@ class ResponseProcessor:
         '''
         Create a list of all potential keys for validators we are monitoring.
         '''
-        val_keys = list(i.get('master_key') for i in self.settings.VALIDATOR_KEYS) \
-                + list(i.get('validation_public_key') for i in self.settings.VALIDATOR_KEYS)
+        val_keys = list(i.get('master_key') for i in self.settings.VALIDATORS) \
+                + list(i.get('validation_public_key') for i in self.settings.VALIDATORS)
 
         for i in val_keys:
             if i:
@@ -104,7 +104,9 @@ class ResponseProcessor:
         as well as a list of all validator keys to track for.
         '''
         await self.generate_val_keys()
+        logging.warning("About to make stock table")
         self.table_stock = await process_stock_output.create_table_stock(self.settings)
+        logging.warning("About to make validator table")
         self.table_validator = \
                 await process_validation_output.create_table_validation(self.settings)
         logging.info("Initial stock & validator tables created. Ready to process server responses.")
@@ -113,21 +115,23 @@ class ResponseProcessor:
         '''
         Send an SMS message periodically.
         '''
-        if self.settings.ADMIN_HEARTBEAT_SMS and self.settings.SMS:
-            if time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
-                now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-                message = "rippled Livenet Monitor bot heartbeat. "
-                message = message + str(f"LL mode: {self.ll_modes[0]}. ")
-                message = message + str(f"Server time: {now}.")
-                logging.warning(message)
-                await self.sms_queue.put(
+        if self.settings.ADMIN_HEARTBEAT \
+           and time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
+            now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
+            message = "XRPL Livenet Monitor bot heartbeat. "
+            message = message + str(f"LL mode: {self.ll_modes[0]}. ")
+            message = message + str(f"Server time: {now}.")
+            logging.warning(message)
+
+            for admin in self.settings.ADMIN_NOTIFICATIONS:
+                await self.notification_queue.put(
                     {
                         'message': message,
-                        'phone_from': self.settings.ADMIN_PHONE_FROM,
-                        'phone_to': self.settings.ADMIN_PHONE_TO,
+                        'server': admin,
                     }
                 )
-                self.last_heartbeat = time.time()
+
+            self.last_heartbeat = time.time()
 
     async def process_messages(self):
         '''

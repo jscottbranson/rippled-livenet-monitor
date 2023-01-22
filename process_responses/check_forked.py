@@ -44,7 +44,6 @@ async def check_diff_mode(settings, table, modes):
     '''
     Check if the servers in the table have different last ledger indexes then the mode.
 
-    :param settings: Config file
     :param list table: Stock server tracking table and validator tracking table
     :param list modes: Modes from the broader group of servers we are checking
     '''
@@ -61,49 +60,34 @@ async def check_diff_mode(settings, table, modes):
     logging.info("Checked for differences between monitored server LL index and the mode of all observed LL indexes.")
     return table
 
-async def alert_resolved_forks(settings, forks, sms_queue):
+async def alert_resolved_forks(forks, notification_queue):
     '''
     Provide output when a forked server rejoins the network.
 
     :param settings: Config file
     :param dict forks: Forked servers with their names and LL Indexes
-    :param asyncio.queues.Queue sms_queue: Outbound notification queue
+    :param asyncio.queues.Queue notification_queue: Outbound notification queue
     '''
     for server in forks:
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
         message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus. Time UTC: {now}.")
         logging.warning(message)
-        if settings.SMS is True:
-            await sms_queue.put(
-                {
-                    'message': message,
-                    'phone_from': server.get('phone_from'),
-                    'phone_to': server.get('phone_to')
-                }
-            )
+        await notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
 
-async def alert_new_forks(settings, forks, sms_queue, modes):
+async def alert_new_forks(forks, notification_queue, modes):
     '''
     Provide appropriate output when a fork is detected.
 
-    :param settings: Config file
     :param dict forks: Forked servers with their names and LL Indexes
-    :param asyncio.queues.Queue sms_queue: Outbound notification queue
+    :param asyncio.queues.Queue notification_queue: Outbound notification queue
     :param list modes: Consensus modes
     '''
     for server in forks:
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
         message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
-        if settings.SMS is True:
-            await sms_queue.put(
-                {
-                    'message': message,
-                    'phone_from': server.get('phone_from'),
-                    'phone_to': server.get('phone_to')
-                }
-            )
+        await notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
 async def check_fork_changes(old_tables, new_tables):
@@ -121,26 +105,29 @@ async def check_fork_changes(old_tables, new_tables):
     old_tables = old_tables[0] + old_tables[1]
     new_tables = new_tables[0] + new_tables[1]
 
-
-    for old_server in old_tables:
-        for new_server in new_tables:
-            if old_server.get('master_key') is new_server.get('master_key') \
+    for new_server in new_tables:
+        for old_server in old_tables:
+            # The following line should be changed to use master keys and ephemeral keys for stock servers
+            if old_server.get('server_name') is new_server.get('server_name') \
+               and old_server.get('forked') is not None \
                and old_server.get('forked') is not new_server.get('forked'):
-                if old_server['forked'] is False:
+                if old_server.get('forked') is False and new_server.get('forked') is True:
                     forks_new.append(new_server)
-                elif old_server['forked'] is True:
+                elif old_server.get('forked') is True and new_server.get('forked') is False:
                     forks_resolved.append(new_server)
+                else:
+                    logging.warning(f"Confused by new server:\n'{new_server}'\nOld server: '{old_server}'.")
 
     return forks_new, forks_resolved
 
-async def fork_checker(settings, table_stock, table_validator, sms_queue):
+async def fork_checker(settings, table_stock, table_validator, notification_queue):
     '''
     Execute functions on tables to see if any servers are forked and alert if they are.
 
     :param settings: Config file
     :param list table_stock: Dictionary for each server being tracked
     :param list table_validator: Dictionary for each validator being tracked
-    :param asyncio.queues.Queue sms_queue: Outbound notification queue
+    :param asyncio.queues.Queue notification_queue: Outbound notification queue
 
     :return: Last ledger index modes
     :return: Updated stock server table
@@ -157,8 +144,8 @@ async def fork_checker(settings, table_stock, table_validator, sms_queue):
         table_validator = await check_diff_mode(settings, table_validator, modes)
         forks_new, forks_resolved = await check_fork_changes(previous_tables, [table_stock, table_validator])
         if forks_new:
-            await alert_new_forks(settings, forks_new, sms_queue, modes)
+            await alert_new_forks(forks_new, notification_queue, modes)
         if forks_resolved:
-            await alert_resolved_forks(settings, forks_resolved, sms_queue)
+            await alert_resolved_forks(forks_resolved, notification_queue)
     logging.info("Successfully checked to see if any servers are forked.")
     return modes, table_stock, table_validator
