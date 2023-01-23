@@ -52,6 +52,8 @@ SEND_SMTP = False
 TWILIO_ACCOUNT_SID = None
 TWILIO_AUTH_TOKEN = None
 
+DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/" #Start with 'https' and end with a forward slash
+
 # The following information is used to send administrative messages, such as routine heartbeats
 # Phone numbers should be prefixed with a "+" and the country code (e.g., +1 for the USA).
 ADMIN_NOTIFICATIONS = [
@@ -59,7 +61,7 @@ ADMIN_NOTIFICATIONS = [
         "admin_name": "Admin 1",
         "notifications": {
             "twilio": {
-                "notify_twilio": True,
+                "notify_twilio": False,
                 "phone_numbers": [
                     {
                         "phone_from": "+19000000",
@@ -69,7 +71,9 @@ ADMIN_NOTIFICATIONS = [
             },
 
             "discord": {
-                "notify_discord": False,
+                "notify_discord": True,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -114,6 +118,8 @@ SERVERS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -146,6 +152,8 @@ SERVERS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -180,6 +188,8 @@ SERVERS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -221,6 +231,8 @@ VALIDATORS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -253,6 +265,8 @@ VALIDATORS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -285,6 +299,8 @@ VALIDATORS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {
@@ -317,6 +333,8 @@ VALIDATORS = [
 
             "discord": {
                 "notify_discord": False,
+                "discord_id": "",
+                "discord_token": "",
             },
 
             "mattermost": {

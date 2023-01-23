@@ -132,6 +132,7 @@ async def update_table_validator(table, message):
             for key in validator.keys():
                 if key in message.keys():
                     validator[key] = message[key]
+            validator['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
     logging.info("Successfully updated validator table.")
 
     return table

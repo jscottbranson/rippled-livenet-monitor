@@ -47,13 +47,10 @@ async def send_message(sid, auth_token, phone_from, phone_to, message_body):
     except (
         OSError,
         socket.gaierror,
-        aiohttp.HTTPServerError,
-        aiohttp.HTTPClientError,
-        aiohttp.HTTPRedirection,
     ) as error:
         # Double check these exceptions
         # Retry SMS messages that throw exceptions, if appropriate
-        logging.critical(f"Error sending Twilio SMS: {error}")
+        logging.critical(f"Error sending Twilio SMS: '{error}'.")
 
 async def clean_number(number):
     '''
@@ -82,7 +79,7 @@ async def send_twilio(settings, notification):
             phone_from = await clean_number(i['phone_from'])
             phone_to = await clean_number(i['phone_to'])
 
-            logging.warning(f"Preparing to send SMS message: '{notification}'.")
+            logging.info(f"Preparing to send SMS message: '{notification}'.")
             sms_response = await send_message(
                 sid, auth_token, phone_from, phone_to, notification['message']
             )
