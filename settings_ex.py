@@ -67,13 +67,17 @@ ADMIN_NOTIFICATIONS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": True,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -113,13 +117,17 @@ SERVERS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -133,7 +141,8 @@ SERVERS = [
             "email": {
                 "notify_email": False,
             },
-        }, },
+        },
+    },
 
     {
         "url": "wss://s1.ripple.com:443",
@@ -147,13 +156,17 @@ SERVERS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -183,13 +196,17 @@ SERVERS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -226,13 +243,17 @@ VALIDATORS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -260,13 +281,17 @@ VALIDATORS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -294,13 +319,17 @@ VALIDATORS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
@@ -328,13 +357,17 @@ VALIDATORS = [
                         "phone_from": "+19000000",
                         "phone_to": "+10000000",
                     },
-                ]
+                ],
             },
 
             "discord": {
                 "notify_discord": False,
-                "discord_id": "",
-                "discord_token": "",
+                "discord_servers": [
+                    {
+                        "discord_id": "",
+                        "discord_token": "",
+                    },
+                ],
             },
 
             "mattermost": {
