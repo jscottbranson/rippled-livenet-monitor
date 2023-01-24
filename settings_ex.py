@@ -88,8 +88,8 @@ ADMIN_NOTIFICATIONS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -138,8 +138,8 @@ SERVERS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -177,8 +177,8 @@ SERVERS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -217,8 +217,8 @@ SERVERS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -264,8 +264,8 @@ VALIDATORS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -302,8 +302,8 @@ VALIDATORS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -340,8 +340,8 @@ VALIDATORS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
@@ -378,8 +378,8 @@ VALIDATORS = [
                 "notify_slack": False,
             },
 
-            "email": {
-                "notify_email": False,
+            "smtp": {
+                "notify_smtp": False,
             },
         },
     },
