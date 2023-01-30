@@ -18,10 +18,10 @@ class ResponseProcessor:
     :param asyncio.queues.Queue message_queue: Incoming websocket messages
     :param asyncio.queues.Queue notification_queue: Outbound SMS messages
     '''
-    def __init__(self, settings, message_queue, notification_queue):
+    def __init__(self, settings, table_stock, table_validator, message_queue, notification_queue):
         self.settings = settings
-        self.table_stock = []
-        self.table_validator = []
+        self.table_stock = table_stock
+        self.table_validator = table_validator
         self.forks = []
         self.ll_modes = []
         self.val_keys = []
@@ -86,21 +86,6 @@ class ResponseProcessor:
                         message
             )
 
-    async def generate_table_stock(self, table_stock):
-        '''
-        Remove the websocket connection object from the stock server table.
-
-        :param list table_stock: Stock servers to keep track of
-        '''
-        table_stock_new = []
-        for server in table_stock:
-            dict_new = {}
-            for key in server:
-                if key != "ws_connection_task":
-                    dict_new[key] = server[key]
-            table_stock_new.append(dict_new)
-        self.table_stock = table_stock_new
-
     async def generate_val_keys(self):
         '''
         Create a list of all potential keys for validators we are monitoring.
@@ -135,13 +120,11 @@ class ResponseProcessor:
 
             self.last_heartbeat = time.time()
 
-    async def process_messages(self, table_stock, table_validator):
+    async def process_messages(self):
         '''
         Listen for incoming messages and execute functions accordingly.
 
         '''
-        await self.generate_table_stock(table_stock)
-        self.table_validator = table_validator
         await self.generate_val_keys()
 
         while True:

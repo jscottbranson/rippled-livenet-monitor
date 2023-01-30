@@ -5,9 +5,10 @@ This output is not relevant for monitoring validations.
 import logging
 import time
 import asyncio
-from copy import deepcopy
 
 from prettytable import PrettyTable
+
+from .common import copy_stock
 
 async def format_table_server(table):
     '''
@@ -46,7 +47,7 @@ async def print_table_server(table):
         "Net Load", "Base Fee", "Ref Fee",
         "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
     ]
-    table_new = await format_table_server(deepcopy(table))
+    table_new = await format_table_server(await copy_stock(table))
     for server in table_new:
         pretty_table.add_row([
             server['server_name'],
@@ -144,52 +145,4 @@ async def update_table_server(table, notification_queue, message):
 
             logging.info("Successfully updated the server status table.")
 
-    return table
-
-async def create_table_stock(settings):
-    '''
-    Create a table representing each server in the settings file.
-    ### This will have to be updated so the table is not created from settings.####
-
-    :param settings: Config file
-    :rtype: list
-    '''
-    table = []
-    default_dict = {
-        'server_name': None,
-        'url': None,
-        'ssl_verify': None,
-        'notifications': None,
-        'pubkey_node': None,
-        'hostid': None,
-        'fee_base': None,
-        'fee_ref': None,
-        'load_base': None,
-        'reserve_base': None,
-        'reserve_inc': None,
-        'load_factor': None,
-        #'load_factor_fee_escalation': None,
-        #'load_factor_fee_queue': None,
-        'load_factor_fee_reference': None,
-        'load_factor_server': None,
-        'server_status': None,
-        'validated_ledgers': None,
-        'ledger_index': None,
-        'ledger_hash': None,
-        'ledger_time':None,
-        'forked': None,
-        'time_forked': None,
-        'txn_count': None,
-        'random': None,
-        'time_updated': None,
-    }
-
-    logging.warning("Preparing to create initial server list.")
-    for server in settings.SERVERS:
-        server_dict = deepcopy(default_dict)
-        for key in server_dict:
-            if key in server:
-                server_dict[key] = server.get(key)
-        table.append(server_dict)
-    logging.warning(f"Initial server list created with {len(table)} items.")
     return table

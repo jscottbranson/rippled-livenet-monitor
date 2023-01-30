@@ -9,8 +9,7 @@ from ws_connection.ws_listen import websocket_subscribe
 from .ws_minder import mind_connections
 from process_responses.process_output import ResponseProcessor
 from notifications.notification_watcher import notifications
-
-from tasks import generate_tables
+from misc import generate_tables
 
 
 def get_command(settings, val_stream_count):
@@ -63,8 +62,8 @@ def start_task_loop(settings):
             monitor_tasks.append(
                 loop.create_task(
                     ResponseProcessor(
-                        settings, message_queue, notification_queue
-                    ).process_messages(table_stock, table_validator)
+                        settings, table_stock, table_validator, message_queue, notification_queue
+                    ).process_messages()
                 )
             )
 
@@ -76,6 +75,7 @@ def start_task_loop(settings):
 
             logging.warning("Initial asyncio task list is running.")
             loop.run_forever()
+
         except (KeyboardInterrupt):
             logging.critical("Keyboard interrupt detected, stopping asyncio loops.")
             for server in table_stock:

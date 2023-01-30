@@ -6,6 +6,8 @@ import logging
 from copy import deepcopy
 import asyncio
 
+from .common import copy_stock
+
 async def calc_modes(values):
     '''
     Return the mode for a list of integers.
@@ -135,7 +137,7 @@ async def fork_checker(settings, table_stock, table_validator, notification_queu
     :rtype: list
     '''
     logging.info("Checking to see if any servers are forked.")
-    previous_tables = [deepcopy(table_stock), deepcopy(table_validator)]
+    previous_tables = [await copy_stock(table_stock), deepcopy(table_validator)]
     modes = await get_modes(table_stock + table_validator)
     if modes and len(modes) > 1:
         logging.info(f"Multiple modes found for last ledger indexes: '{modes}'. Skipping fork check.")
