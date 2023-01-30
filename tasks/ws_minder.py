@@ -36,17 +36,17 @@ async def resubscribe_client(server, message_queue):
     :return: The server object with a new websocket connection
     :rtype: dict
     '''
-    logging.info(f"WS connection to '{server.get('server_name')}' closed. Attempting to reconnect. Retry counter: '{server.get('retry_count')}'.")
+    logging.info(f"WS connection to '{server.get('server_name')}' closed. Attempting to reconnect. Retry counter: '{server.get('ws_retry_count')}'.")
     # Pass a message to the queue indicating the server is disconnected
     await queue_state_change(server, message_queue)
     # Delete the disconnected server's task
-    del server['task']
-    server['task'] = None
-    server['retry_count'] = server['retry_count'] + 1
+    del server['ws_connection_task']
+    server['ws_connection_task'] = None
+    server['ws_retry_count'] = server['ws_retry_count'] + 1
     # Open the new connection
     loop = asyncio.get_event_loop()
-    server['task'] = loop.create_task(websocket_subscribe(server, message_queue))
-    logging.warning(f"It appears we reconnected to '{server.get('server_name')}'. Retry counter: '{server['retry_count']}'.")
+    server['ws_connection_task'] = loop.create_task(websocket_subscribe(server, message_queue))
+    logging.warning(f"It appears we reconnected to '{server.get('server_name')}'. Retry counter: '{server.get('ws_retry_count')}'.")
     return server
 
 async def mind_connections(settings, ws_servers, message_queue):
@@ -63,7 +63,7 @@ async def mind_connections(settings, ws_servers, message_queue):
         try:
             await asyncio.sleep(settings.WS_RETRY)
             for server in ws_servers:
-                if server['task'].done() and server['retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
+                if server['ws_connection_task'].done() and server['ws_retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
                     ws_add = await resubscribe_client(server, message_queue)
                     ws_servers_del.append(server)
                     ws_servers_add.append(ws_add)

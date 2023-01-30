@@ -20,8 +20,8 @@ class ResponseProcessor:
     '''
     def __init__(self, settings, message_queue, notification_queue):
         self.settings = settings
-        self.table_stock = {}
-        self.table_validator = {}
+        self.table_stock = []
+        self.table_validator = []
         self.forks = []
         self.ll_modes = []
         self.val_keys = []
@@ -86,30 +86,32 @@ class ResponseProcessor:
                         message
             )
 
+    async def generate_table_stock(self, table_stock):
+        '''
+        Remove the websocket connection object from the stock server table.
+
+        :param list table_stock: Stock servers to keep track of
+        '''
+        table_stock_new = []
+        for server in table_stock:
+            dict_new = {}
+            for key in server:
+                if key != "ws_connection_task":
+                    dict_new[key] = server[key]
+            table_stock_new.append(dict_new)
+        self.table_stock = table_stock_new
+
     async def generate_val_keys(self):
         '''
         Create a list of all potential keys for validators we are monitoring.
         '''
-        val_keys = list(i.get('master_key') for i in self.settings.VALIDATORS) \
-                + list(i.get('validation_public_key') for i in self.settings.VALIDATORS)
+        val_keys = list(i.get('master_key') for i in self.table_validator) \
+                + list(i.get('validation_public_key') for i in self.table_validator)
 
         for i in val_keys:
             if i:
                 self.val_keys.append(i)
         logging.warning(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
-
-    async def init_variables(self):
-        '''
-        Create blank tables for stock and validator tracking
-        as well as a list of all validator keys to track for.
-        '''
-        await self.generate_val_keys()
-        logging.warning("About to make stock table")
-        self.table_stock = await process_stock_output.create_table_stock(self.settings)
-        logging.warning("About to make validator table")
-        self.table_validator = \
-                await process_validation_output.create_table_validation(self.settings)
-        logging.info("Initial stock & validator tables created. Ready to process server responses.")
 
     async def heartbeat_message(self):
         '''
@@ -133,12 +135,14 @@ class ResponseProcessor:
 
             self.last_heartbeat = time.time()
 
-    async def process_messages(self):
+    async def process_messages(self, table_stock, table_validator):
         '''
         Listen for incoming messages and execute functions accordingly.
 
         '''
-        await self.init_variables()
+        await self.generate_table_stock(table_stock)
+        self.table_validator = table_validator
+        await self.generate_val_keys()
 
         while True:
             try:

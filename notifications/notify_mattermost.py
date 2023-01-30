@@ -17,3 +17,5 @@ async def send_mattermost(settings, notification):
     '''
     if settings.SEND_MATTERMOST is True:
         logging.warning(f"Simulating sending Mattermost message: '{notification.get('message')}'.")
+    else:
+        logging.info(f"Mattermost notifications disabled in settings. Ignoring: '{notification}'.")

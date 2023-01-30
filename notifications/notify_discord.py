@@ -77,4 +77,4 @@ async def send_discord(settings, notification):
         for response in server_responses:
             await discord_response(settings, notification, response)
     else:
-        logging.warning(f"Discord notifications are disabled in settings. Ignoring message: '{notification}'.")
+        logging.info(f"Discord notifications are disabled in settings. Ignoring message: '{notification}'.")

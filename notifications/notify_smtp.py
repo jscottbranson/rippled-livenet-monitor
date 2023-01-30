@@ -15,3 +15,5 @@ async def send_smtp(settings, notification):
     '''
     if settings.SEND_SMTP is True:
         logging.warning(f"Simulating sending Email message: '{notification.get('message')}'.")
+    else:
+        logging.info(f"SMTP notifications disabled in settings. Ignoring: '{notification}'.")

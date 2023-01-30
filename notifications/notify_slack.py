@@ -17,3 +17,5 @@ async def send_slack(settings, notification):
     '''
     if settings.SEND_SLACK is True:
         logging.warning(f"Simulating sending Slack message: '{notification.get('message')}'.")
+    else:
+        logging.info(f"Slack notifications disabled in settings. Ignoring: '{notification}'.")
