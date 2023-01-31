@@ -16,9 +16,9 @@ async def discord_post(settings, notification):
     :param settings: Config file
     :param dict notification: Recipient information and message keys.
     '''
-    responses = []
-    message = {'content': str(notification.get('message'))}
     discord_settings = notification.get('server').get('notifications').get('discord')
+    message = {'content': str(notification.get('message'))}
+    responses = []
 
     if discord_settings and message:
         for server in discord_settings.get('discord_servers'):
@@ -42,7 +42,7 @@ async def discord_post(settings, notification):
                 logging.error(f"Error sending Discord message: '{error}'.")
                 # It probably makes sense to retry sending the message here.
 
-        return responses
+    return responses
 
 async def rate_limit(settings, notification, response):
     '''

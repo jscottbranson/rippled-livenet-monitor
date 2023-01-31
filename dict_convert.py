@@ -21,6 +21,10 @@ PHONE_TO = "+10000000"
 DISCORD_ID = ""
 DISCORD_TOKEN = ""
 
+MATTERMOST_URL = ""
+MATTERMOST_KEY = ""
+MATTERMOST_CHANNEL = ""
+
 NOTIFICATION_DICT = {
     "notifications": {
         "twilio": {
@@ -43,6 +47,13 @@ NOTIFICATION_DICT = {
         },
         "mattermost": {
             "notify_mattermost": None,
+            "mattermost_servers": [
+                {
+                    "mattermost_url": None,
+                    "mattermost_key": None,
+                    "mattermost_channel": None,
+                },
+            ]
         },
         "slack": {
             "notify_slack": None,
@@ -130,6 +141,11 @@ def build_notification_dict():
     # Set Discord server info
     discord['discord_servers'][0]['discord_id'] = DISCORD_ID
     discord['discord_servers'][0]['discord_token'] = DISCORD_TOKEN
+
+    # Set MM server info
+    mattermost['mattermost_servers'][0]['mattermost_url'] = MATTERMOST_URL
+    mattermost['mattermost_servers'][0]['mattermost_key'] = MATTERMOST_KEY
+    mattermost['mattermost_servers'][0]['mattermost_channel'] = MATTERMOST_CHANNEL
 
 if __name__ == '__main__':
     build_notification_dict()

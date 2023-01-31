@@ -84,6 +84,12 @@ ADMIN_NOTIFICATIONS = [
 
             "mattermost": {
                 "notify_mattermost": False,
+                "mattermost_servers": [
+                    {
+                        "mattermost_url": "",
+                        "mattermost_key": "",
+                        "mattermost_channel": "",
+                    }
             },
 
             "slack": {
