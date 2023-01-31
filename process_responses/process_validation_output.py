@@ -87,10 +87,8 @@ async def del_dup_validators(table):
     table_new = []
 
     for validator in table:
-        master_key = validator.get('master_key')
-
-        if master_key not in val_keys:
-            val_keys.append(master_key)
+        if validator.get('master_key') not in val_keys:
+            val_keys.append(validator.get('master_key'))
             table_new.append(validator)
         else:
             logging.warning(f"Removed duplicate validator: '{validator}'.")
@@ -157,7 +155,7 @@ async def process_validations(settings, val_keys, table_validator, processed_val
     # Add the message so we don't process duplicates
     processed_validations.append(message['data']['signature'])
     logging.info(f"Appended validation from '{message['server_url']}' to received tracking queue.")
-    # Prune received message queue
+    # Prune received message queue and remove duplicate validators from tracking (depending on settings)
     logging.info("Checking to see if we need to clean things")
     val_keys, table_validator, processed_validations = await clean_validations(
         settings, val_keys, table_validator, processed_validations
@@ -165,6 +163,13 @@ async def process_validations(settings, val_keys, table_validator, processed_val
 
     logging.info("Done processing validation message.")
     return val_keys, table_validator, processed_validations
+
+async def log_validations(settings, message):
+    '''
+    Log validations defined in the settings file.
+    '''
+    if message['data'].get('master_key') in settings.LOG_VALIDATIONS_FROM:
+        logging.critical(f"Logged validation: '{message}'.")
 
 async def check_validations(settings, val_keys, table_validator, processed_validations, message):
     '''
@@ -184,6 +189,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
             val_keys, table_validator, processed_validations = await process_validations(
                 settings, val_keys, table_validator, processed_validations, message
             )
+            await log_validations(settings, message)
     else:
         logging.debug(f"Ignored validation message from: '{message['server_url']}'.")
 

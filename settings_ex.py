@@ -32,6 +32,8 @@ CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console out
 #### Random ####
 REMOVE_DUP_VALIDATORS = True # Allow the same validator master/eph keys to be tracked more than once
 
+LOG_VALIDATIONS_FROM = [] # Log validations that include a master_key defined in this list.
+
 #### Administrative Notification ####
 ADMIN_HEARTBEAT = False # should we send heartbeat messages to administrators?
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between heartbeat messages
