@@ -47,25 +47,43 @@ async def send_message(sid, auth_token, phone_from, phone_to, message_body):
     except (
         OSError,
         socket.gaierror,
-        aiohttp.HTTPServerError,
-        aiohttp.HTTPClientError,
-        aiohttp.HTTPRedirection,
     ) as error:
         # Double check these exceptions
         # Retry SMS messages that throw exceptions, if appropriate
-        logging.critical(f"Error sending Twilio SMS: {error}")
+        logging.critical(f"Error sending Twilio SMS: '{error}'.")
 
-async def send_twilio_sms(settings, message):
+async def clean_number(number):
+    '''
+    Remove everything that isn't an integer or plus sign from a phone (SMS) number.
+
+    :param str number: Number to clean
+
+    :returns: Cleaned number
+    :rtype: str
+    '''
+    return ''.join(x for x in number if x.isdigit() or x == "+")
+
+async def send_twilio(settings, notification):
     '''
     Call this to send a SMS message.
     This function is not responsible for sending the message
 
     :param settings: Config file
-    :param dict message: phone_from, phone_to, and message keys
+    :param dict notification: phone_from, phone_to, and message keys
     '''
-    sid, auth_token = await get_account_info(settings)
-    sms_response = await send_message(
-        sid, auth_token, message['phone_from'], message['phone_to'], message['message']
-    )
-    logging.info(f"Successfully sent SMS message: {message['message']}. Received response {sms_response}.")
-    return sms_response
+    if settings.SEND_TWILIO is True:
+        sid, auth_token = await get_account_info(settings)
+
+        twilio_settings = notification['server']['notifications']['twilio']
+        for i in twilio_settings.get('phone_numbers'):
+            phone_from = await clean_number(i['phone_from'])
+            phone_to = await clean_number(i['phone_to'])
+
+            logging.info(f"Preparing to send SMS message: '{notification}'.")
+            sms_response = await send_message(
+                sid, auth_token, phone_from, phone_to, notification['message']
+            )
+            logging.info(f"Successfully sent SMS message: {notification['message']}. Received response {sms_response}.")
+
+    else:
+        logging.info(f"Twilio messages disabled in settings. Ignored SMS message: '{notification}'.")

@@ -6,33 +6,54 @@ Notifications should be sent here to be dispatched, not to individual messaging 
 import logging
 import asyncio
 
-from .notify_twilio import send_twilio_sms
+from .notify_twilio import send_twilio
+from .notify_discord import send_discord
+from .notify_slack import send_slack
+from .notify_mattermost import send_mattermost
+from .notify_smtp import send_smtp
 
-async def clean_number(number):
+async def dispatch_notification(settings, notification):
     '''
-    Remove everything that isn't an integer or plus sign from phone numbers.
+    Determine where to send the message, and dispatch it.
 
-    :parma str number: Phone number to clean.
+    :param settings: Config file
+    :param dict notification: Message and notification information
     '''
-    return ''.join(x for x in number if x.isdigit() or x == "+")
+    recipients = notification['server']['notifications']
 
-async def notifications(settings, sms_queue):
+    for i in settings.KNOWN_NOTIFICATIONS:
+        if i in recipients.keys():
+            allowed = recipients.get(str(i)).get('notify_' + str(i))
+
+        if allowed is True:
+            notification_function = "send_" + str(i)
+
+            possibles = globals().copy()
+            possibles.update(locals())
+            method = possibles.get(notification_function)
+            if method:
+                await method(settings, notification)
+            else:
+                logging.warning(f"Error locating the function for notification method: '{i}'. To send notification: '{notification}'.")
+
+async def notifications(settings, notification_queue):
     '''
-    Watch for incoming notifications.
+    Watch for incoming notifications. Messages should be a dictionary with a 'message' key and
+    a 'server' key. The former should have a string with the content of the notification. The server
+    field must contain the notification settings for the message recipient. The message will be
+    dispatched via all enabled notification channels.
 
-    Items placed into sms_queue should be a dict with phone_to, phone_from, & message keys.
+    Items placed into notification_queue should be a dict with "'server': {'notifications':{}}" &
+    'message' keys.
+
+    :param notification_queue: Listens for dictionaries with 'message' and 'server' keys.
     '''
     logging.info("Notification watcher is running.")
     while True:
         try:
-            message = await sms_queue.get()
-            message['phone_from'] = await clean_number(message['phone_from'])
-            message['phone_to'] = await clean_number(message['phone_to'])
-            logging.warning(f"Preparing to send SMS message: '{message}'.")
+            notification = await notification_queue.get()
+            await dispatch_notification(settings, notification)
 
-            if settings.TWILIO is True:
-                response_twilio = await send_twilio_sms(settings, message)
-                logging.info(f"Twilio response: '{response_twilio}'.")
         except (asyncio.CancelledError, KeyboardInterrupt):
             logging.critical("Keyboard interrupt detected. Stopping notification watcher.")
             break

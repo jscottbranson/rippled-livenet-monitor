@@ -13,7 +13,7 @@ def set_logging():
         filename=settings.LOG_FILE,
         level=settings.LOG_LEVEL,
         datefmt="%Y-%m-%d %H:%M:%S",
-        format='%(asctime)s %(levelname)s %(module)s - %(funcName)s: %(message)s',
+        format='%(asctime)s %(levelname)s: %(module)s - %(funcName)s (%(lineno)d): %(message)s',
     )
 
 if __name__ == '__main__':
