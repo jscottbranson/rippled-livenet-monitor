@@ -3,10 +3,14 @@ Create validator and stock server dictionaries.
 This tool is designed to convert more basic old style settings dictionaries
 into newer dictionaries. It is also useful for updating notification settings for multiple servers
 at once.
+
+You can `cat settings_new.py >> settings.py` after
+setting variables and running this script.
 '''
 import json
-import settings
+import to_monitor as settings
 
+# Change the following variables as needed:
 OUTPUT_FILE = 'settings_new.py'
 
 NOTIFY_TWILIO = False
@@ -53,7 +57,7 @@ NOTIFICATION_DICT = {
                     "mattermost_key": None,
                     "mattermost_channel": None,
                 },
-            ]
+            ],
         },
         "slack": {
             "notify_slack": None,
@@ -64,6 +68,7 @@ NOTIFICATION_DICT = {
     },
 }
 
+# Don't change things below here
 def output_text(servers, validators):
     '''
     Write the server and validator lists to a text file with the
@@ -127,7 +132,7 @@ def build_notification_dict():
     slack = NOTIFICATION_DICT['notifications']['slack']
     smtp = NOTIFICATION_DICT['notifications']['smtp']
 
-    # Set the notification settings
+    # Set the notification parameters
     twilio['notify_twilio'] = NOTIFY_TWILIO
     discord['notify_discord'] = NOTIFY_DISCORD
     mattermost['notify_mattermost'] = NOTIFY_MATTERMOST

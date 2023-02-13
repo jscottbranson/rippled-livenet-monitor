@@ -26,6 +26,7 @@ Be cautious when using webhooks, as messages may be lost due to rate limiting or
 5. Retry sending messages that fail (by piping them back into the queue).
 6. Support Discord, Slack, Mattermost, and email notifications.
 7. Notify validator subscribers if their ephemeral key changes.
+8. Write a function to scrub sensitive notification data from logging.
 
 ## Notifications
 If enabled in `settings.py`, notifications will be sent at the following times:
