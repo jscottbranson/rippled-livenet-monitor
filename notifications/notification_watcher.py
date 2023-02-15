@@ -51,7 +51,7 @@ async def notifications(settings, notification_queue):
     logging.info("Notification watcher is running.")
     while True:
         try:
-            notification = await notification_queue.get()
+            notification = notification_queue.get()
             await dispatch_notification(settings, notification)
 
         except (asyncio.CancelledError, KeyboardInterrupt):

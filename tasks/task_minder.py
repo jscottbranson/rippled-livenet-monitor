@@ -2,11 +2,12 @@
 Subscribe to the server command on multiple servers, then pass the resultant messages
 into a queue for processing.
 '''
+from sys import exit
+from multiprocessing import Process, Queue
 import logging
 import asyncio
 
-from ws_connection.ws_listen import websocket_subscribe
-from .ws_minder import mind_connections
+from ws_connection.initialize_ws import start_websocket_loop
 from process_responses.process_output import ResponseProcessor
 from notifications.notification_watcher import notifications
 from misc import generate_tables
@@ -26,64 +27,90 @@ def get_command(settings, val_stream_count):
 
     return command, val_stream_count
 
+def start_notifications(args_d):
+    '''
+    Start the notification dispatcher.
+    '''
+    loop = asyncio.new_event_loop()
+    monitor_tasks = []
+
+    try:
+        monitor_tasks.append(
+            loop.create_task(
+                notifications(args_d['settings'], args_d['notification_queue'])
+            )
+        )
+
+        logging.warning("Notification loop started.")
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        for task in monitor_tasks:
+            task.cancel()
+        logging.critical("Closed notification loops.")
+
+def start_output_processing(args_d):
+    '''
+    Start processing websocket responses.
+    '''
+    loop = asyncio.new_event_loop()
+    monitor_tasks = []
+
+    try:
+        monitor_tasks.append(
+            loop.create_task(
+                ResponseProcessor(
+                    args_d['settings'],
+                    args_d['table_stock'],
+                    args_d['table_validator'],
+                    args_d['message_queue'],
+                    args_d['notification_queue']
+                ).process_messages()
+            )
+        )
+
+        logging.warning("Response processor loop started.")
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        for task in monitor_tasks:
+            task.cancel()
+        logging.critical("Closed output processing loops.")
+
 def start_task_loop(settings):
     '''
     Run the asyncio event loop.
     '''
-    loop = asyncio.new_event_loop()
-    monitor_tasks = []
-    val_stream_count = 0
-    message_queue = asyncio.Queue(maxsize=999999999)
-    notification_queue = asyncio.Queue(maxsize=100000)
-
-    if settings.ASYNCIO_DEBUG is True:
-        loop.set_debug(True)
-        logging.info("asyncio debugging enabled.")
+    processes = []
+    message_queue = Queue()
+    notification_queue = Queue()
 
     table_stock = generate_tables.create_table_stock(settings)
     table_validator = generate_tables.create_table_validation(settings)
 
+    args_d = {
+        'settings': settings,
+        'table_stock': table_stock,
+        'table_validator': table_validator,
+        'message_queue': message_queue,
+        'notification_queue': notification_queue,
+    }
+
+    processes.append(Process(target=start_websocket_loop, args=(args_d,)))
+    processes.append(Process(target=start_output_processing, args=(args_d,)))
+    processes.append(Process(target=start_notifications, args=(args_d,)))
+
     while True:
         try:
-            logging.info("Adding server subscriptions to the event loop.")
-            for server in table_stock:
-                server['command'], val_stream_count = get_command(settings, val_stream_count)
-                server['ws_retry_count'] = 0
-                server['ws_connection_task'] = loop.create_task(
-                    websocket_subscribe(server, message_queue)
-                )
-
-            monitor_tasks.append(
-                loop.create_task(
-                    mind_connections(settings, table_stock, message_queue)
-                )
-            )
-
-            monitor_tasks.append(
-                loop.create_task(
-                    ResponseProcessor(
-                        settings, table_stock, table_validator, message_queue, notification_queue
-                    ).process_messages()
-                )
-            )
-
-            monitor_tasks.append(
-                loop.create_task(
-                    notifications(settings, notification_queue)
-                )
-            )
-
-            logging.warning("Initial asyncio task list is running.")
-            loop.run_forever()
+            for process in processes:
+                process.start()
+            for process in processes:
+                process.join()
+            logging.warning("Initial multiprocessing list is running.")
 
         except (KeyboardInterrupt):
-            logging.critical("Keyboard interrupt detected, stopping asyncio loops.")
-            for server in table_stock:
-                server['ws_connection_task'].cancel()
-            for task in monitor_tasks:
-                task.cancel()
-            logging.critical("Final cleanup asyncio task loop is running.")
-            loop.run_forever()
+            logging.critical("Keyboard interrupt detected, exiting.")
+            logging.critical("Final multiprocessing cleanup is running.")
         finally:
-            loop.close()
-            logging.critical("All asyncio loops have been closed.")
+            logging.critical("All threads have been closed.")
+            exit(0)

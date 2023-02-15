@@ -111,7 +111,7 @@ class ResponseProcessor:
             logging.warning(message)
 
             for admin in self.settings.ADMIN_NOTIFICATIONS:
-                await self.notification_queue.put(
+                self.notification_queue.put(
                     {
                         'message': message,
                         'server': admin,
@@ -129,7 +129,7 @@ class ResponseProcessor:
 
         while True:
             try:
-                message = await self.message_queue.get()
+                message = self.message_queue.get()
                 await self.sort_new_messages(message)
                 await self.evaluate_forks()
                 await self.process_console_output()

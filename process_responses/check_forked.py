@@ -74,7 +74,7 @@ async def alert_resolved_forks(forks, notification_queue):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
         message = str(f"Previously forked server: '{server.get('server_name')}' is in consensus. Time UTC: {now}.")
         logging.warning(message)
-        await notification_queue.put({'message': message, 'server': server,})
+        notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
 
 async def alert_new_forks(forks, notification_queue, modes):
@@ -89,7 +89,7 @@ async def alert_new_forks(forks, notification_queue, modes):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
         message = str(f"Forked server: '{server.get('server_name')}' Returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
-        await notification_queue.put({'message': message, 'server': server,})
+        notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
 async def check_fork_changes(old_tables, new_tables):
