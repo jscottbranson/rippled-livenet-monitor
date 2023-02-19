@@ -118,8 +118,9 @@ async def log_keys(message_result, table):
     Keep track of all the potential keys returned by server subscription messages.
     '''
     logging.warning("Checking for new keys.")
-    for key in message_result:
-        if key not in table[0]:
+    ignore_keys = ['type',]
+    for key in message_result.keys():
+        if key not in table[0].keys() and key not in ignore_keys:
             logging.warning(f"new server subscription key found: '{key}'.")
 
 async def update_table_server(table, notification_queue, message):
@@ -132,7 +133,10 @@ async def update_table_server(table, notification_queue, message):
     :param dict message: New server subscription message
     '''
     logging.info(f"Server status message received '{message}'. Preparing to update the table.")
-    message_result = message['data']['result']
+    if message['data'].get('result'):
+        message_result = message['data']['result']
+    elif message['data'].get('type') == 'serverStatus':
+        message_result = message['data']
 
     await log_keys(message_result, table)
 

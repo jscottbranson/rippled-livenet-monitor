@@ -62,21 +62,21 @@ class ResponseProcessor:
         :param dict message: Incoming subscription response
         '''
         # Check for server subscription messages
-        if 'result' in message['data']:
+        if message['data'].get('type') == 'serverStatus' or message['data'].get('result'):
             self.table_stock = \
                     await process_stock_output.update_table_server(
                         self.table_stock, self.notification_queue, message
                     )
 
         # Check for ledger subscription messages
-        elif message['data']['type'] == 'ledgerClosed':
+        elif message['data'].get('type') == 'ledgerClosed':
             self.table_stock = \
                     await process_stock_output.update_table_ledger(
                         self.table_stock, message
                     )
 
         # Check for validation messages
-        elif message['data']['type'] == 'validationReceived':
+        elif message['data'].get('type') == 'validationReceived':
             self.val_keys, self.table_validator, self.processed_validations = \
                     await process_validation_output.check_validations(
                         self.settings,
@@ -85,6 +85,9 @@ class ResponseProcessor:
                         self.processed_validations,
                         message
             )
+
+        else:
+            logging.warning(f"Message received that couldn't be sorted: '{message}'.")
 
     async def generate_val_keys(self):
         '''
