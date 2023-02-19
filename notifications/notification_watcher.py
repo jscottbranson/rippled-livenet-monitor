@@ -36,7 +36,7 @@ async def dispatch_notification(settings, notification):
             else:
                 logging.warning(f"Error locating the function for notification method: '{i}'. To send notification: '{notification}'.")
 
-async def notifications(settings, notification_queue):
+async def notifications(args_d):
     '''
     Watch for incoming notifications. Messages should be a dictionary with a 'message' key and
     a 'server' key. The former should have a string with the content of the notification. The server
@@ -46,16 +46,36 @@ async def notifications(settings, notification_queue):
     Items placed into notification_queue should be a dict with "'server': {'notifications':{}}" &
     'message' keys.
 
-    :param notification_queue: Listens for dictionaries with 'message' and 'server' keys.
+    :param dict args_d: Default settings and queues.
     '''
     logging.info("Notification watcher is running.")
     while True:
         try:
-            notification = notification_queue.get()
-            await dispatch_notification(settings, notification)
+            notification = args_d['notification_queue'].get()
+            await dispatch_notification(args_d['settings'], notification)
 
         except (asyncio.CancelledError, KeyboardInterrupt):
             logging.critical("Keyboard interrupt detected. Stopping notification watcher.")
             break
         except Exception as error:
             logging.critical(f"An otherwise uncaught exception occurred in the notification watcher: '{error}'.")
+
+def start_notifications(args_d):
+    '''
+    Start the asyncio loop.
+    '''
+    loop = asyncio.new_event_loop()
+    monitor_tasks = []
+
+    try:
+        monitor_tasks.append(
+            loop.create_task(notifications(args_d))
+        )
+
+        logging.warning("Notification loop started.")
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        for task in monitor_tasks:
+            task.cancel()
+        logging.critical("Closed notification asyncio loops.")
