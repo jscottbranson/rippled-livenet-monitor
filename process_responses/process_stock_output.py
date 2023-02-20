@@ -48,6 +48,7 @@ async def print_table_server(table):
         "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
     ]
     table_new = await format_table_server(await copy_stock(table))
+
     for server in table_new:
         pretty_table.add_row([
             server['server_name'],
@@ -105,21 +106,12 @@ async def check_state_change(server, message, notification_queue):
         body = body + str(f"Time UTC: {now}.")
 
         logging.warning(body)
-        await notification_queue.put(
+        notification_queue.put(
             {
                 'message': body,
                 'server': server,
             }
         )
-
-async def log_keys(message_result, table):
-    '''
-    Keep track of all the potential keys returned by server subscription messages.
-    '''
-    logging.warning("Checking for new keys.")
-    for key in message_result:
-        if key not in table[0]:
-            logging.warning(f"new server subscription key found: '{key}'.")
 
 async def update_table_server(table, notification_queue, message):
     '''
@@ -130,16 +122,17 @@ async def update_table_server(table, notification_queue, message):
     :param asyncio.queues.Queue notification_queue: Message queue to send via SMS
     :param dict message: New server subscription message
     '''
-    logging.info(f"Server status message received from '{message['server_url']}'. Preparing to update the table.")
-    message_result = message['data']['result']
-
-    await log_keys(message_result, table)
+    logging.info(f"Server status message received '{message}'. Preparing to update the table.")
+    if message['data'].get('result'):
+        message_result = message['data']['result']
+    elif message['data'].get('type') == 'serverStatus':
+        message_result = message['data']
 
     for server in table:
-        if server['url'] is message['server_url']:
+        if server['url'] == message['server_url']:
             await check_state_change(server, message_result, notification_queue)
-            for key in server.keys():
-                if key in message_result.keys():
+            for key in message_result.keys():
+                if key in server.keys():
                     server[key] = message_result[key]
             server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.localtime())
 

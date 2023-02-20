@@ -4,7 +4,7 @@ Monitor multiple websocket connections and attempt to reconnect when a websocket
 import asyncio
 import logging
 
-from ws_connection.ws_listen import websocket_subscribe
+from .ws_listen import websocket_subscribe
 from notifications import notify_twilio
 
 async def queue_state_change(server, message_queue):
@@ -14,7 +14,7 @@ async def queue_state_change(server, message_queue):
     :param dict server: Info on the server that the reconnection attempt will be made to
     :param asyncio.queues.Queue message_queue: Queue for incoming websocket messages
     '''
-    await message_queue.put(
+    message_queue.put(
         {
             'server_url': server.get('url'),
             'data': {

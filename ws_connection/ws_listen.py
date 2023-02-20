@@ -46,7 +46,7 @@ async def websocket_subscribe(server, message_queue):
                 try:
                     data = await ws.recv()
                     data = json.loads(data)
-                    await message_queue.put(
+                    message_queue.put(
                         {"server_url": server.get('url'), "data": data}
                     )
                 except (json.JSONDecodeError,) as error:

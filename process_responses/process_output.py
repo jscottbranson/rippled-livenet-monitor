@@ -14,20 +14,18 @@ class ResponseProcessor:
     '''
     Process remote server responses to server, ledger, and validation subscription stream messages.
 
-    :param settings: Config file
-    :param asyncio.queues.Queue message_queue: Incoming websocket messages
-    :param asyncio.queues.Queue notification_queue: Outbound SMS messages
+    :param dict args_d: Default settings, tables, and queues
     '''
-    def __init__(self, settings, table_stock, table_validator, message_queue, notification_queue):
-        self.settings = settings
-        self.table_stock = table_stock
-        self.table_validator = table_validator
+    def __init__(self, args_d):
+        self.settings = args_d['settings']
+        self.table_stock = args_d['table_stock']
+        self.table_validator = args_d['table_validator']
         self.forks = []
         self.ll_modes = []
         self.val_keys = []
         self.processed_validations = []
-        self.message_queue = message_queue
-        self.notification_queue = notification_queue
+        self.message_queue = args_d['message_queue']
+        self.notification_queue = args_d['notification_queue']
         self.time_last_output = 0
         self.time_fork_check = 0
         self.last_heartbeat = time.time()
@@ -62,21 +60,21 @@ class ResponseProcessor:
         :param dict message: Incoming subscription response
         '''
         # Check for server subscription messages
-        if 'result' in message['data']:
+        if message['data'].get('type') == 'serverStatus' or message['data'].get('result'):
             self.table_stock = \
                     await process_stock_output.update_table_server(
                         self.table_stock, self.notification_queue, message
                     )
 
         # Check for ledger subscription messages
-        elif message['data']['type'] == 'ledgerClosed':
+        elif message['data'].get('type') == 'ledgerClosed':
             self.table_stock = \
                     await process_stock_output.update_table_ledger(
                         self.table_stock, message
                     )
 
         # Check for validation messages
-        elif message['data']['type'] == 'validationReceived':
+        elif message['data'].get('type') == 'validationReceived':
             self.val_keys, self.table_validator, self.processed_validations = \
                     await process_validation_output.check_validations(
                         self.settings,
@@ -85,6 +83,9 @@ class ResponseProcessor:
                         self.processed_validations,
                         message
             )
+
+        else:
+            logging.warning(f"Message received that couldn't be sorted: '{message}'.")
 
     async def generate_val_keys(self):
         '''
@@ -111,7 +112,7 @@ class ResponseProcessor:
             logging.warning(message)
 
             for admin in self.settings.ADMIN_NOTIFICATIONS:
-                await self.notification_queue.put(
+                self.notification_queue.put(
                     {
                         'message': message,
                         'server': admin,
@@ -129,7 +130,7 @@ class ResponseProcessor:
 
         while True:
             try:
-                message = await self.message_queue.get()
+                message = self.message_queue.get()
                 await self.sort_new_messages(message)
                 await self.evaluate_forks()
                 await self.process_console_output()
@@ -141,3 +142,25 @@ class ResponseProcessor:
                 break
             except Exception as error:
                 logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")
+
+def start_output_processing(args_d):
+    '''
+    Start the asyncio loop.
+
+    :param dict args_d: Default settings, queues, and tables.
+    '''
+    loop = asyncio.new_event_loop()
+    monitor_tasks = []
+
+    try:
+        monitor_tasks.append(
+            loop.create_task(ResponseProcessor(args_d).process_messages())
+        )
+
+        logging.warning("Response processor loop started.")
+        loop.run_forever()
+
+    except KeyboardInterrupt:
+        for task in monitor_tasks:
+            task.cancel()
+        logging.critical("Closed response processor asyncio loops.")

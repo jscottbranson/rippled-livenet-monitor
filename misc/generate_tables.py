@@ -23,14 +23,15 @@ def create_table_stock(settings):
         'notifications': None,
         'pubkey_node': None,
         'hostid': None,
-        'fee_base': None,
+        'fee_base': None, # Someone should file an issue on Git to have the first
+        'base_fee': None, # 'server' response be more consistent with subsequent responses.
         'fee_ref': None,
         'load_base': None,
         'reserve_base': None,
         'reserve_inc': None,
         'load_factor': None,
-        #'load_factor_fee_escalation': None,
-        #'load_factor_fee_queue': None,
+        'load_factor_fee_escalation': None,
+        'load_factor_fee_queue': None,
         'load_factor_fee_reference': None,
         'load_factor_server': None,
         'server_status': None,
