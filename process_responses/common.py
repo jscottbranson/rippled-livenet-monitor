@@ -27,17 +27,6 @@ into a human readable version number.
 This is basically a Python3 translation of the XRPScan XRPL-Server-Version
 repo: https://github.com/xrpscan/xrpl-server-version/blob/main/index.js
 '''
-import asyncio
-
-IMPLEMENTATIONS = {
-    '183b': 'rippled',
-}
-
-RELEASE_TYPES = {
-    '10': 'RC',
-    '01': 'beta',
-}
-
 async def decode_version(version):
     '''
     Decode XRP Ledger version numbers.
@@ -47,6 +36,15 @@ async def decode_version(version):
     :param returns: Human readable version information
     :param rtype: dict
     '''
+    implementations = {
+        '183b': 'rippled',
+    }
+
+    release_types = {
+        '10': 'RC',
+        '01': 'beta',
+    }
+
     decoded_version = {}
 
     # Convert from integer to a string binary with 0 padding on the left
@@ -56,8 +54,8 @@ async def decode_version(version):
     imp_bin = version_bin[0:16]
     imp_hex = format(int(imp_bin, 2), 'x')
 
-    if imp_hex in IMPLEMENTATIONS:
-        decoded_version['implementation'] = IMPLEMENTATIONS[imp_hex]
+    if imp_hex in implementations:
+        decoded_version['implementation'] = implementations[imp_hex]
     else:
         decoded_version['implementation'] = 'unknown'
 
@@ -72,8 +70,8 @@ async def decode_version(version):
 
     # Decode Release Type and number (if not a major release)
     release_type_bin = version_bin[40:42]
-    if release_type_bin in RELEASE_TYPES:
-        decoded_version['release_type'] = RELEASE_TYPES[release_type_bin]
+    if release_type_bin in release_types:
+        decoded_version['release_type'] = release_types[release_type_bin]
         decoded_version['release_number'] = int(version_bin[42:48], 2)
     else:
         decoded_version['release_type'] = ''
