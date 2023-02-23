@@ -6,9 +6,10 @@ import logging
 import time
 import asyncio
 
+from . import console_output
+from .check_forked import fork_checker
 from . import process_stock_output
 from . import process_validation_output
-from .check_forked import fork_checker
 
 class ResponseProcessor:
     '''
@@ -40,9 +41,9 @@ class ResponseProcessor:
         if self.settings.CONSOLE_OUT is True \
            and time.time() - self.time_last_output >= self.settings.CONSOLE_REFRESH_TIME:
             os.system('clear')
-            await process_stock_output.print_table_server(self.table_stock)
+            await console_output.print_table_server(self.table_stock)
             if self.table_validator:
-                await process_validation_output.print_table_validation(self.table_validator)
+                await console_output.print_table_validation(self.table_validator, self.settings.AMENDMENTS)
             self.time_last_output = time.time()
 
     async def evaluate_forks(self):

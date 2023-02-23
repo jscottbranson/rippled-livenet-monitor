@@ -34,6 +34,12 @@ REMOVE_DUP_VALIDATORS = True # Allow the same validator master/eph keys to be tr
 
 LOG_VALIDATIONS_FROM = [] # Log validations that include a master_key defined in this list.
 
+AMENDMENTS = {
+    '0285B7E5E08E1A8E4C15636F0591D87F73CB6A7B6452A932AD72BBC8E5D1CBE3': 'fixNFTokenDirV1 (dep)',
+    '3C43D9A973AA4443EF3FC38E42DD306160FBFFDAB901CD8BAA15D09F2597EB87': 'NonFungibleTokensV1 (dep)',
+    '36799EA497B1369B170805C078AEFE6188345F9B3E324C21E9CA3FF574E3C3D6': 'fixNFTokenNegOffer (dep)',
+}
+
 #### Administrative Notification ####
 ADMIN_HEARTBEAT = False # should we send heartbeat messages to administrators?
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between heartbeat messages
