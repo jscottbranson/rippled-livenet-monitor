@@ -10,6 +10,27 @@ from prettytable import PrettyTable
 
 from .common import copy_stock
 
+async def fee_calc(fee, base_fee, multiple):
+    '''
+    Calculate a fee and apply color if it's elevated.
+    '''
+    color_reset = "\033[0;0m"
+    green = "\033[0;32m"
+    red = "\033[1;31m"
+    if isinstance(fee, int) and isinstance(base_fee, int) and isinstance(multiple, int):
+        calc_fee = fee / multiple * base_fee
+        if calc_fee > base_fee:
+            calc_fee = red + str(calc_fee) + color_reset
+        elif calc_fee == base_fee:
+            calc_fee = green + str(calc_fee) + color_reset
+        else:
+            calc_fee = fee
+    elif isinstance(base_fee, int):
+        calc_fee = green + str(base_fee) + color_reset
+    else:
+        calc_fee = fee
+    return calc_fee
+
 async def format_table_server(table):
     '''
     Format values to human readable.
@@ -21,17 +42,30 @@ async def format_table_server(table):
     green = "\033[0;32m"
     red = "\033[1;31m"
     for server in table:
+        # Shorten ledger hashes
         if isinstance(server['ledger_hash'], str):
             server['ledger_hash'] = server['ledger_hash'][:5]
+        # Full servers in green
         if isinstance(server['server_status'], str):
             if server['server_status'] == "full":
                 server['server_status'] = green + server['server_status'] + color_reset
             else:
                 server['server_status'] = red + server['server_status'] + color_reset
+        # Forked Servers in Red
         if server['forked'] is False:
             server['forked'] = green + str(server['forked']) + color_reset
         else:
             server['forked'] = red + str(server['forked']) + color_reset
+        # Base load factor in green
+        if isinstance(server['load_factor'], int) and isinstance(server['load_base'], int):
+            if server['load_factor'] == server['load_base']:
+                server['load_factor'] = green + str(server['load_factor']) + color_reset
+            else:
+                server['load_factor'] = red + str(server['load_factor']) + color_reset
+        # Calculate Open Ledger Fee
+        server['load_factor_fee_escalation'] = await fee_calc(server['load_factor_fee_escalation'], server['fee_base'], server['load_base'])
+        # Calculate Queue Fee
+        server['load_factor_fee_queue'] = await fee_calc(server['load_factor_fee_queue'], server['fee_base'], server['load_base'])
     return table
 
 async def print_table_server(table):
@@ -43,8 +77,7 @@ async def print_table_server(table):
     logging.info("Preparing to print updated server table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
-        "Server Name", "State", "Base Load", "Srv Load",
-        "Net Load", "Base Fee", "Ref Fee",
+        "Server Name", "State", "O.L. Fee", "Queue Fee", "Load Factor",
         "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
     ]
     table_new = await format_table_server(await copy_stock(table))
@@ -53,11 +86,9 @@ async def print_table_server(table):
         pretty_table.add_row([
             server['server_name'],
             server['server_status'],
-            server['load_base'],
-            server['load_factor_server'],
+            server['load_factor_fee_escalation'],
+            server['load_factor_fee_queue'],
             server['load_factor'],
-            server['fee_base'],
-            server['fee_ref'],
             server['ledger_hash'],
             server['validated_ledgers'],
             server['txn_count'],

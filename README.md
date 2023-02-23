@@ -19,14 +19,13 @@ This monitoring tool is not intended for solo use in a production environment - 
 Be cautious when using webhooks, as messages may be lost due to rate limiting or other factors.
 
 ## To-Do
-1. Check fields returned by 'server' subscription and update tables accordingly (additional fields are currently logged at the warning level).
-2. Attempt to reconnect to servers that stop sending new last_ledger index numbers (and send an admin warning if all servers stop advancing).
-3. Integrate with sqlite DBs to retrieve server and contact information mappings.
-4. Consider multithreading the websocket connections and output processor.
-5. Retry sending messages that fail (by piping them back into the queue).
-6. Support Discord, Slack, Mattermost, and email notifications.
-7. Notify validator subscribers if their ephemeral key changes.
-8. Write a function to scrub sensitive notification data from logging.
+1. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
+2. Send an admin warning if >50% of servers stop advancing.
+2. Integrate with sqlite DBs to retrieve server, validator, and notification data.
+4. Retry sending messages that fail (by piping them back into the queue).
+5. Support Slack & email notifications.
+6. Notify validator subscribers if their ephemeral key changes.
+7. Write a function to scrub sensitive notification data from logging.
 
 ## Notifications
 If enabled in `settings.py`, notifications will be sent at the following times:

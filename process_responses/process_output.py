@@ -109,7 +109,7 @@ class ResponseProcessor:
             message = "XRPL Livenet Monitor bot heartbeat. "
             message = message + str(f"LL mode: {self.ll_modes[0]}. ")
             message = message + str(f"Server time (UTC): {now}.")
-            logging.warning(message)
+            logging.info(message)
 
             for admin in self.settings.ADMIN_NOTIFICATIONS:
                 self.notification_queue.put(
