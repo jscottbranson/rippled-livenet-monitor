@@ -13,12 +13,11 @@ from .common import copy_stock
 
 
 # Validator table output
-async def format_table_validation(table, amendments):
+async def format_table_validation(table):
     '''
     Format output for the validation table, so it's human friendly.
 
     :param list table: Dictionaries for each validator being tracked.
-    :param dict amendments: Known amendment IDs mapped to their names.
     '''
     color_reset = "\033[0;0m"
     green = "\033[0;32m"
@@ -48,34 +47,22 @@ async def format_table_validation(table, amendments):
             if validator['server_version'][0:].isdigit():
                 server_version = await decode_version(validator['server_version'])
                 validator['server_version'] = server_version.get('version')
-        # Report amendments
-        if isinstance(validator['amendments'], list):
-            amendments_new = None
-            count = 0
-            for amendment in validator['amendments']:
-                if amendment in  amendments.keys() and count == 0:
-                    amendments_new = amendments[amendment]
-                elif amendment in amendments.keys() and count > 0:
-                    amendments_new = amendments_new + "\n" +  amendments[amendment]
-                count += 1
-            validator['amendments'] = amendments_new
     return table
 
-async def print_table_validation(table, amendments):
+async def print_table_validation(table):
     '''
     Print the validation table.
 
     :param list table: Dictionaries for each validator being tracked.
-    :param dict amendments: Known amendment IDs mapped to their names.
     '''
     logging.info("Preparing to print updated validations table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
         "Validator Name", "Master Key", "Eph Key", "Version", "Base Fee", "Local LL Fee",
-        "LL Hash", "LL Index", "Full?", "Forked?", "Amendments", "Last Updated",
+        "LL Hash", "LL Index", "Full?", "Forked?", "Last Updated",
     ]
 
-    table_new = await format_table_validation(deepcopy(table), amendments)
+    table_new = await format_table_validation(deepcopy(table))
 
     for validator in table_new:
         pretty_table.add_row([
@@ -89,7 +76,6 @@ async def print_table_validation(table, amendments):
             validator['ledger_index'],
             validator['full'],
             validator['forked'],
-            validator['amendments'],
             validator['time_updated'],
         ])
 
@@ -184,3 +170,51 @@ async def print_table_server(table):
             ])
     print(pretty_table)
     logging.info("Successfully printed updated server table.")
+
+async def sort_amendments(table_validator, amendments):
+    '''
+    Aggregate amendment votes.
+
+    :param dict table_validator: Validator tracking table.
+    :param dict amendments: Known amendment IDs mapped to their names.
+    '''
+    for amendment in amendments:
+        amendment['supporters'] = []
+        for validator in table_validator:
+            if isinstance(validator['amendments'], list):
+                if amendment['id'] in validator['amendments']:
+                    amendment['supporters'].append(validator['server_name'])
+
+    return amendments
+
+async def print_table_amendments(table_validator, amendments):
+    '''
+    Print information on amendment voting.
+
+    :param dict table_validator: Validator tracking table.
+    :param dict amendments: Known amendment IDs mapped to their names.
+    '''
+    logging.info("Preparing to print updated amendments table.")
+    pretty_table=PrettyTable()
+    pretty_table.field_names = [
+        "Amendment",
+        "Yea Votes",
+        "Nay Votes",
+        "% Support",
+        "Supporters",
+    ]
+
+    amendment_votes = await sort_amendments(table_validator, deepcopy(amendments))
+    for amendment in amendment_votes:
+        supporters = ''
+        for supporter in amendment['supporters']:
+            supporters = supporters + supporter + ', '
+        pretty_table.add_row([
+            amendment['name'],
+            len(amendment['supporters']),
+            len(table_validator) - len(amendment['supporters']),
+            str(round(len(amendment['supporters']) / len(table_validator) * 100, 2)) + '%',
+            supporters,
+        ])
+    print(pretty_table)
+    logging.info("Successfully printed the amendments table.")
