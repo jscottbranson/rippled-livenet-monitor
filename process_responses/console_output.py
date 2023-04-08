@@ -132,8 +132,10 @@ async def format_table_server(table):
         # Base load factor in green
         if isinstance(server['load_factor'], int) and isinstance(server['load_base'], int):
             if server['load_factor'] == server['load_base']:
+                server['load_factor'] = round(server['load_factor'] / server['load_base'], 1)
                 server['load_factor'] = green + str(server['load_factor']) + color_reset
             else:
+                server['load_factor'] = round(server['load_factor'] / server['load_base'], 1)
                 server['load_factor'] = red + str(server['load_factor']) + color_reset
         # Calculate Open Ledger Fee
         server['load_factor_fee_escalation'] = await fee_calc(server['load_factor_fee_escalation'], server['fee_base'], server['load_base'])
@@ -150,7 +152,7 @@ async def print_table_server(table):
     logging.info("Preparing to print updated server table.")
     pretty_table = PrettyTable()
     pretty_table.field_names = [
-        "Server Name", "State", "O.L. Fee", "Queue Fee", "Load Factor",
+        "Server Name", "State", "O.L. Fee", "Queue Fee", "Load Multiplier",
         "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
     ]
     table_new = await format_table_server(await copy_stock(table))
@@ -213,7 +215,7 @@ async def print_table_amendments(table_validator, amendments):
             amendment['name'],
             len(amendment['supporters']),
             len(table_validator) - len(amendment['supporters']),
-            str(round(len(amendment['supporters']) / len(table_validator) * 100, 2)) + '%',
+            str(round(len(amendment['supporters']) / len(table_validator) * 100, 1)) + '%',
             supporters,
         ])
     print(pretty_table)
