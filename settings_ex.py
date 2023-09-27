@@ -34,6 +34,49 @@ REMOVE_DUP_VALIDATORS = True # Allow the same validator master/eph keys to be tr
 
 LOG_VALIDATIONS_FROM = [] # Log validations that include a master_key defined in this list.
 
+AMENDMENTS = [
+    {
+        'id': '0285B7E5E08E1A8E4C15636F0591D87F73CB6A7B6452A932AD72BBC8E5D1CBE3',
+        'name': 'fixNFTokenDirV1 (dep)',
+    },
+    {
+        'id': '3C43D9A973AA4443EF3FC38E42DD306160FBFFDAB901CD8BAA15D09F2597EB87',
+        'name': 'NonFungibleTokensV1 (dep)',
+    },
+    {
+        'id': '36799EA497B1369B170805C078AEFE6188345F9B3E324C21E9CA3FF574E3C3D6',
+        'name': 'fixNFTokenNegOffer (dep)',
+    },
+    {
+        'id': '93E516234E35E08CA689FA33A6D38E103881F8DCB53023F728C307AA89D515A7',
+        'name': 'XRPFees',
+    },
+    {
+        'id': '75A7E01C505DD5A179DFE3E000A9B6F1EDDEB55A12F95579A23E15B15DC8BE5A',
+        'name': 'ImmediateOfferKilled',
+    },
+    {
+        'id': '2E2FB9CF8A44EB80F4694D38AADAE9B8B7ADAFD2F092E10068E61C98C4F092B0',
+        'name': 'fixUniversalNumber',
+    },
+    {
+        'id': 'F1ED6B4A411D8B872E65B9DCB4C8B100375B0DD3D62D07192E011D6D7F339013',
+        'name': 'fixTrustLinesToSelf',
+    },
+    {
+        'id': '73761231F7F3D94EC3D8C63D91BDD0D89045C6F71B917D1925C01253515A6669',
+        'name': 'fixNonFungibleTokensV1_2',
+    },
+    {
+        'id': '47C3002ABA31628447E8E9A8B315FAA935CE30183F9A9B86845E469CA2CDC3DF',
+        'name': 'DisallowIncoming',
+    },
+    {
+        'id': '9178256A980A86CF3D70D0260A7DA6402AAFE43632FDBCB88037978404188871',
+        'name': 'OwnerPaysFee',
+    },
+]
+
 #### Administrative Notification ####
 ADMIN_HEARTBEAT = False # should we send heartbeat messages to administrators?
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between heartbeat messages

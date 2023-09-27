@@ -6,66 +6,6 @@ import logging
 import time
 import asyncio
 
-from prettytable import PrettyTable
-
-from .common import copy_stock
-
-async def format_table_server(table):
-    '''
-    Format values to human readable.
-
-    :param list table: Dictionary for each server being tracked
-    :rtype: list
-    '''
-    color_reset = "\033[0;0m"
-    green = "\033[0;32m"
-    red = "\033[1;31m"
-    for server in table:
-        if isinstance(server['ledger_hash'], str):
-            server['ledger_hash'] = server['ledger_hash'][:5]
-        if isinstance(server['server_status'], str):
-            if server['server_status'] == "full":
-                server['server_status'] = green + server['server_status'] + color_reset
-            else:
-                server['server_status'] = red + server['server_status'] + color_reset
-        if server['forked'] is False:
-            server['forked'] = green + str(server['forked']) + color_reset
-        else:
-            server['forked'] = red + str(server['forked']) + color_reset
-    return table
-
-async def print_table_server(table):
-    '''
-    Print a pretty table to the console.
-
-    :param list table: Dictionary for each server being tracked
-    '''
-    logging.info("Preparing to print updated server table.")
-    pretty_table = PrettyTable()
-    pretty_table.field_names = [
-        "Server Name", "State", "Base Load", "Srv Load",
-        "Net Load", "Base Fee", "Ref Fee",
-        "LL Hash", "History", "LL # Tx", "Forked?", "Last Updated",
-    ]
-    table_new = await format_table_server(await copy_stock(table))
-
-    for server in table_new:
-        pretty_table.add_row([
-            server['server_name'],
-            server['server_status'],
-            server['load_base'],
-            server['load_factor_server'],
-            server['load_factor'],
-            server['fee_base'],
-            server['fee_ref'],
-            server['ledger_hash'],
-            server['validated_ledgers'],
-            server['txn_count'],
-            server['forked'],
-            server['time_updated'],
-            ])
-    print(pretty_table)
-    logging.info("Successfully printed updated server table.")
 
 async def update_table_ledger(table, message):
     '''

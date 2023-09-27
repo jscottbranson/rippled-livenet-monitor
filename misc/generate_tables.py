@@ -72,6 +72,8 @@ def create_table_validation(settings):
     default_dict = {
         'cookie': None,
         'server_version': None,
+        'amendments': None,
+        'flags': None,
         'base_fee': None,
         'reserve_base': None,
         'reserve_inc': None,

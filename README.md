@@ -13,20 +13,22 @@ Specify validating nodes' master or ephemeral validation keys in the appropriate
 As this tool is used to monitor the live network, it is not really useful for monitoring reporting mode/Clio servers.
 
 ## Warning
-This is an early stage project, so expect problems. For example, asyncio does not clean up neatly when exiting using a keyboard interrupt.
-This monitoring tool is not intended for solo use in a production environment - please use redundant monitoring for mission-critical infrastructure.
+This is an early stage project, so expect problems.
+This monitoring tool is not intended for solo use in a production environment - please use redundant monitoring for mission-critical infrastructure. No one who contributed to this code is responsible for your servers.
+
+By running this code, you agree the code author(s) are not liable for missed notifications or other issues, including, but not limited to, those arising from errors in the code.
 
 Be cautious when using webhooks, as messages may be lost due to rate limiting or other factors.
 
 ## To-Do
-1. Check fields returned by 'server' subscription and update tables accordingly (additional fields are currently logged at the warning level).
-2. Attempt to reconnect to servers that stop sending new last_ledger index numbers (and send an admin warning if all servers stop advancing).
-3. Integrate with sqlite DBs to retrieve server and contact information mappings.
-4. Consider multithreading the websocket connections and output processor.
-5. Retry sending messages that fail (by piping them back into the queue).
-6. Support Discord, Slack, Mattermost, and email notifications.
-7. Notify validator subscribers if their ephemeral key changes.
-8. Write a function to scrub sensitive notification data from logging.
+1. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
+2. Send an admin warning if >50% of servers stop advancing.
+2. Integrate with sqlite DBs to retrieve server, validator, and notification data.
+4. Retry sending messages that fail (by piping them back into the queue).
+5. Support Slack & email notifications.
+6. Notify validator subscribers if their ephemeral key changes.
+7. Write a function to scrub sensitive notification data from logging.
+8. Account for rippled errors, like tooBusy.
 
 ## Notifications
 If enabled in `settings.py`, notifications will be sent at the following times:
@@ -35,16 +37,17 @@ If enabled in `settings.py`, notifications will be sent at the following times:
 3. When a subscribed server or a monitored validator is more than n ledgers (specified in `settings.py`) ahead of or behind the rest of the network
 4. (coming later) When latency is dangerously high between monitoring bot and the remote server
 5. Administrators can receive heartbeat messages as specified in `settings.py`
+6. (coming later) When a validator changes their amendment votes
 
 At this time, notifications will not be retried if the monitoring server is unable to reach the API. This functionality can be easily integrated in the future by passing the messages back into the notification_queue.
 
 ## Running the bot
 As written, this code will produce errors with asyncio in Python 3.9. The code is tested and works with 3.10 and 3.11.
-1. `git clone https://github.com/crypticrabbit/rippled_monitor.git`
-2. `cd rippled_monitor`
+1. `git clone https://github.com/jscottbranson/rippled-livenet-monitor.git`
+2. `cd rippled-livenet-monitor`
 3. `pip install -r requirements.txt`
 4. `cp settings_ex.py settings.py`
-5. Adjust `settings.py` as needed
+5. Adjust `settings.py`
 6. (optional) Save Twilio notification credentials as env variables.
 7. `python3 main.py`
 
