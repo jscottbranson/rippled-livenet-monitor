@@ -14,7 +14,7 @@ import to_monitor as settings
 OUTPUT_FILE = 'settings_new.py'
 
 NOTIFY_TWILIO = False
-NOTIFY_DISCORD = True
+NOTIFY_DISCORD = False
 NOTIFY_MATTERMOST = False
 NOTIFY_SLACK = False
 NOTIFY_SMTP = False
@@ -155,5 +155,5 @@ def build_notification_dict():
 if __name__ == '__main__':
     build_notification_dict()
     servers_new = build_servers(settings.SERVERS)
-    validators_new = build_validators(settings.VALIDATOR_KEYS)
+    validators_new = build_validators(settings.VALIDATORS)
     output_text(servers_new, validators_new)
