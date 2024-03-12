@@ -44,7 +44,8 @@ class ResponseProcessor:
             await console_output.print_table_server(self.table_stock)
             if self.table_validator:
                 await console_output.print_table_validation(self.table_validator)
-                await console_output.print_table_amendments(self.table_validator, self.settings.AMENDMENTS)
+                if self.settings.PRINT_AMENDMENTS:
+                    await console_output.print_table_amendments(self.table_validator, self.settings.AMENDMENTS)
             self.time_last_output = time.time()
 
     async def evaluate_forks(self):

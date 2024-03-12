@@ -4,9 +4,10 @@ Make pretty console output.
 import logging
 import time
 import asyncio
+import textwrap
 from copy import deepcopy
 
-from prettytable import PrettyTable
+from prettytable import PrettyTable, ALL
 
 from .common import decode_version
 from .common import copy_stock
@@ -37,11 +38,13 @@ async def format_table_validation(table):
             validator['forked'] = green + str(validator['forked']) + color_reset
         else:
             validator['forked'] = red + str(validator['forked']) + color_reset
+            validator['server_name'] = red + validator['server_name'] + color_reset
         # Green if validations are full
         if validator['full']:
             validator['full'] = green + str(validator['full']) + color_reset
         else:
             validator['full'] = red + str(validator['full']) + color_reset
+            validator['server_name'] = red + validator['server_name'] + color_reset
         # Calculate server version
         if isinstance(validator['server_version'], str):
             if validator['server_version'][0:].isdigit():
@@ -79,6 +82,7 @@ async def print_table_validation(table):
             validator['time_updated'],
         ])
 
+    pretty_table.sortby = "Validator Name"
     print(pretty_table)
     logging.info("Successfully printed updated validations table.")
 
@@ -170,6 +174,7 @@ async def print_table_server(table):
             server['forked'],
             server['time_updated'],
             ])
+    pretty_table.sortby = "Server Name"
     print(pretty_table)
     logging.info("Successfully printed updated server table.")
 
@@ -188,6 +193,20 @@ async def sort_amendments(table_validator, amendments):
                     amendment['supporters'].append(validator['server_name'])
 
     return amendments
+
+async def format_amendment(amendment, table_validator):
+    '''
+    Color and other fun things!
+    '''
+    color_reset = "\033[0;0m"
+    green = "\033[0;32m"
+    support_percent = round(len(amendment['supporters']) / len(table_validator) * 100, 1)
+    if support_percent > 80:
+        amendment['name'] = green + str(amendment['name']) + color_reset
+        amendment['support_percent'] = green + str(support_percent) + color_reset
+    else:
+        amendment['support_percent'] = str(support_percent)
+    return amendment
 
 async def print_table_amendments(table_validator, amendments):
     '''
@@ -208,6 +227,7 @@ async def print_table_amendments(table_validator, amendments):
 
     amendment_votes = await sort_amendments(table_validator, deepcopy(amendments))
     for amendment in amendment_votes:
+        amendment = await format_amendment(amendment, table_validator)
         supporters = ''
         for supporter in amendment['supporters']:
             supporters = supporters + supporter + ', '
@@ -215,8 +235,11 @@ async def print_table_amendments(table_validator, amendments):
             amendment['name'],
             len(amendment['supporters']),
             len(table_validator) - len(amendment['supporters']),
-            str(round(len(amendment['supporters']) / len(table_validator) * 100, 1)) + '%',
-            supporters,
+            amendment['support_percent'],
+            textwrap.fill(supporters, width=180),
         ])
+    pretty_table.hrules=ALL
+    pretty_table.sortby = "Yea Votes"
+    pretty_table.reversesort = True
     print(pretty_table)
     logging.info("Successfully printed the amendments table.")

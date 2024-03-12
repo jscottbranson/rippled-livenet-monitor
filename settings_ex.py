@@ -28,6 +28,7 @@ LL_FORK_CUTOFF = 25 # Number ledgers ahead or behind mode of monitored servers t
 #### Console Output ####
 CONSOLE_OUT = True # Print a fancy table to the console
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
+PRINT_AMENDMENTS = True # Print output summarizing amendment voting.
 
 #### Random ####
 REMOVE_DUP_VALIDATORS = True # Allow the same validator master/eph keys to be tracked more than once
