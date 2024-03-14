@@ -128,11 +128,13 @@ async def format_table_server(table):
                 server['server_status'] = green + server['server_status'] + color_reset
             else:
                 server['server_status'] = red + server['server_status'] + color_reset
+                server['server_name'] = red + str(server['server_name']) + color_reset
         # Forked Servers in Red
         if server['forked'] is False:
             server['forked'] = green + str(server['forked']) + color_reset
         else:
             server['forked'] = red + str(server['forked']) + color_reset
+            server['server_name'] = red + str(server['server_name']) + color_reset
         # Base load factor in green
         if isinstance(server['load_factor'], int) and isinstance(server['load_base'], int):
             if server['load_factor'] == server['load_base']:
@@ -200,6 +202,9 @@ async def format_amendment(amendment, table_validator):
     '''
     color_reset = "\033[0;0m"
     green = "\033[0;32m"
+
+    amendment['supporters'].sort(key=str.lower)
+
     support_percent = round(len(amendment['supporters']) / len(table_validator) * 100, 1)
     if support_percent > 80:
         amendment['name'] = green + str(amendment['name']) + color_reset

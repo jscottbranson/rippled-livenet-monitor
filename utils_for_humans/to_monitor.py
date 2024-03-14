@@ -42,6 +42,5 @@ VALIDATORS = [
     {"master_key": "nHUpcmNsxAw47yt2ADDoNoQrzLyTJPgnyq16u6Qx2kRPA17oUNHz", "server_name": "ISRDC.in",},
     {"master_key": "nHUpJSKQTZdB1TDkbCREMuf8vEqFkk84BcvZDhsQsDufFDQVajam", "server_name": "Data443",},
     {"master_key": "nHBgiH2aih5JoaL3wbiiqSQfhrC21vJjxXoCoD2fuqcNbriXsfLm", "server_name": "AtTokyo",},
-    {"validation_public_key": "n9M2UqXLK25h9YEQTskmCXbWPGhQmB1pFVqeXia38UwLaL838VbG", "server_name": "Gatehub.net (eph)"},
-    {"validation_public_key": "nHU3AenyRuJ4Yei4YHkh6frZg8y2RwXznkMAomUE1ptV5Spvqsih", "server_name": "aesthetes.art",},
+    {"master_key": "nHU3AenyRuJ4Yei4YHkh6frZg8y2RwXznkMAomUE1ptV5Spvqsih", "server_name": "aesthetes.art",},
 ]
