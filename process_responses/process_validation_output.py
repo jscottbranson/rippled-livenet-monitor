@@ -48,6 +48,20 @@ async def clean_validations(settings, val_keys, table, processed_validations):
             val_keys, table = await del_dup_validators(table)
     return val_keys, table, processed_validations
 
+async def reset_potentially_omitted_values(validator):
+    '''
+    Don't assume that potentially omitted values persist.
+    For example, an amendment may be supported by a validator
+    then the validator operator drops support, resulting in a flag ledger
+    with the 'amendment' key/value missing. Without this function, it would appear
+    that the operator still supports the amendment, despite dropping support.
+
+    :param dict validator: An individual validator's dictionary
+    '''
+    message_keys = ['amendments', 'base_fee', 'load_fee', 'reserve_base', 'reserve_inc', 'server_version']
+    for i in message_keys:
+        validator[i] = None
+
 async def update_table_validator(table, message):
     '''
     Update the table based on a received validation message.
@@ -57,11 +71,14 @@ async def update_table_validator(table, message):
     '''
     message = message['data']
 
-    # Consider notifying if the ephemeral key changes for a server
+    # Consider notifying if the ephemeral/master key or cookie changes for a server
 
     for validator in table:
         if message.get('master_key') and message.get('master_key') == validator['master_key'] \
            or message.get('validation_public_key') == validator['validation_public_key']:
+            # Check if this is a flag ledger.
+            if (int(message['ledger_index']) + 1) % 256 == 0:
+                await reset_potentially_omitted_values(validator)
             for key in validator.keys():
                 if key in message.keys():
                     validator[key] = message[key]

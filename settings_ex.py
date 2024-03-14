@@ -28,32 +28,46 @@ LL_FORK_CUTOFF = 25 # Number ledgers ahead or behind mode of monitored servers t
 #### Console Output ####
 CONSOLE_OUT = True # Print a fancy table to the console
 CONSOLE_REFRESH_TIME = 5 # Time in seconds to wait before refreshing console output.
+PRINT_AMENDMENTS = True # Print output summarizing amendment voting.
 
 #### Random ####
 REMOVE_DUP_VALIDATORS = True # Allow the same validator master/eph keys to be tracked more than once
 
 LOG_VALIDATIONS_FROM = [] # Log validations that include a master_key defined in this list.
 
+#### Amendments ####
 AMENDMENTS = [
     {
         'id': '8CC0774A3BF66D1D22E76BBDA8E8A232E6B6313834301B3B23E8601196AE6455',
         'name': 'AMM',
     },
     {
-        'id': '56B241D7A43D40354D02A9DC4C8DF5C7A1F930D92A9035C4E12291B3CA3E1C2B',
-        'name': 'Clawback',
+        'id': 'C393B3AEEBF575E475F0C60D5E4241B2070CC4D0EB6C4846B1A07508FAEFC485',
+        'name': 'fixInnerObjTemplate',
     },
     {
-        'id': '27CD95EE8E1E5A537FF2F89B6CEB7C622E78E9374EBD7DCBEDFAE21CD6F16E0A',
-        'name': 'fixReducedOffersV1',
+        'id': '15D61F0C6DB6A2F86BCF96F1E2444FEC54E705923339EC175BD3E517C8B3FF91',
+        'name': 'fixDisallowIncomingV1',
+    },
+    {
+        'id': '3318EA0CF0755AF15DAC19F2B5C5BCBFF4B78BDD57609ACCAABE2C41309B051A',
+        'name': 'fixFillOrKill',
+    },
+    {
+        'id': 'C98D98EE9616ACD36E81FDEB8D41D349BF5F1B41DD64A0ABC1FE9AA5EA267E9C',
+        'name': 'XChainBridge',
+    },
+    {
+        'id': 'DB432C3A09D9D5DFC7859F39AE5FF767ABC59AED0A9FB441E83B814D8946C109',
+        'name': 'DID',
     },
     {
         'id': '93E516234E35E08CA689FA33A6D38E103881F8DCB53023F728C307AA89D515A7',
         'name': 'XRPFees',
     },
     {
-        'id': 'AE35ABDEFBDE520372B31C957020B34A7A4A9DC3115A69803A44016477C84D6E',
-        'name': 'fixNfTokenRemint',
+        'id': '03BDC0099C4E14163ADA272C1B6F6FABB448CC3E51F522F978041E4B57D9158C',
+        'name': 'fixNFTokenReserve',
     },
 ]
 
