@@ -51,6 +51,9 @@ As written, this code will produce errors with asyncio in Python 3.9. The code i
 6. (optional) Save Twilio notification credentials as env variables.
 7. `python3 main.py`
 
+## Generating Configuration Files
+The `utils_for_humans` directory contains a `dict_convert.py` script that can be used to assist in generating a configuration file with monitoring output that is consistent across all servers.
+
 ## Updating
 1. `cd rippled_monitor`
 2. ` git pull`
