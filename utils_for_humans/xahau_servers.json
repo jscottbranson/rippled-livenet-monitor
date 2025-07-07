@@ -1,0 +1,7 @@
+[
+	{
+		"url": "ws://localhost:8000",
+		"server_name": "Aggregator",
+		"ssl_verify": false
+	}
+]
