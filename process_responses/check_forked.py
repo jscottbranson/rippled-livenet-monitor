@@ -92,6 +92,21 @@ async def alert_new_forks(forks, notification_queue, modes):
         notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of forked servers: '{forks}'.")
 
+async def create_unique_id(server):
+    '''
+    Create a unique identifier for each server, since Xahau UNL contains duplicates with the same domain names.
+    '''
+    server_id = str()
+    identifiers = ['server_name', 'master_key', 'validation_public_key', 'cookie']
+    for i in identifiers:
+        if server.get(i, "novalue") is not None:
+            server_id += server.get(str(i), "_no_value")
+        else:
+            server_id += "__no_value"
+    logging.info(f"Server ID generated: {server_id}")
+        
+    return str(server_id)
+
 async def check_fork_changes(old_tables, new_tables):
     '''
     Evaluate previously forked servers to see if they are no longer forked.
@@ -107,19 +122,24 @@ async def check_fork_changes(old_tables, new_tables):
     old_tables = old_tables[0] + old_tables[1]
     new_tables = new_tables[0] + new_tables[1]
 
+    logging.info("Checking for changes in forks.")
     for new_server in new_tables:
+        new_server_id = await create_unique_id(new_server)
         for old_server in old_tables:
-            # The following line should be changed to use master keys and ephemeral keys for stock servers
-            if old_server.get('server_name') is new_server.get('server_name') \
-               and old_server.get('forked') is not None \
-               and old_server.get('forked') is not new_server.get('forked'):
-                if old_server.get('forked') is False and new_server.get('forked') is True:
-                    forks_new.append(new_server)
-                elif old_server.get('forked') is True and new_server.get('forked') is False:
-                    forks_resolved.append(new_server)
-                else:
-                    logging.warning(f"Confused by new server:\n'{new_server}'\nOld server: '{old_server}'.")
-
+            old_server_id = await create_unique_id(old_server)
+            try:
+                if old_server_id == new_server_id\
+                   and old_server.get('forked') is not None \
+                   and old_server.get('forked') is not new_server.get('forked'):
+                    if old_server.get('forked') is False and new_server.get('forked') is True:
+                        forks_new.append(new_server)
+                    elif old_server.get('forked') is True and new_server.get('forked') is False:
+                        forks_resolved.append(new_server)
+                    else:
+                        logging.warning(f"Confused by new server:\n'{new_server}'\nOld server: '{old_server}'.")
+            except Exception as error:
+                logging.warning(f"Error checking for changes in new/resolved forks: {error}")
+    logging.info("Done checking for changes in forks.")
     return forks_new, forks_resolved
 
 async def fork_checker(settings, table_stock, table_validator, notification_queue):
