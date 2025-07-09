@@ -109,9 +109,9 @@ class ResponseProcessor:
         if self.settings.ADMIN_HEARTBEAT \
            and time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
             now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-            message = "Livenet Network Monitor Bot heartbeat. "
-            message = message + str(f"LL mode: {self.ll_modes[0]}. ")
-            message = message + str(f"Server time (UTC): {now}.")
+            message = "Livenet Monitoring Bot heartbeat. "
+            message = message + str(f"LL mode: '{self.ll_modes[0]}'. ")
+            message = message + str(f"Server time (UTC): '{now}'.")
             logging.info(message)
 
             for admin in self.settings.ADMIN_NOTIFICATIONS:
