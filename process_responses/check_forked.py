@@ -72,7 +72,7 @@ async def alert_resolved_forks(forks, notification_queue):
     '''
     for server in forks:
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-        message = str(f"Previously forked server: '{server.get('server_name')}' '{server.get('master_key')[:3]}'is back in consensus at ledger: '{server.get('ledger_index')}'. Time UTC: {now}.")
+        message = str(f"Previously forked server: '{server.get('server_name')}' '{server.get('master_key')[:6]}'is back in consensus at ledger: '{server.get('ledger_index')}'. Time UTC: {now}.")
         logging.warning(message)
         notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
@@ -87,7 +87,7 @@ async def alert_new_forks(forks, notification_queue, modes):
     '''
     for server in forks:
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-        message = str(f"Forked server: '{server.get('server_name')}' '{server.get('master_key')[:3]}' returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
+        message = str(f"Forked server: '{server.get('server_name')}' '{server.get('master_key')[:6]}' returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
         notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of forked servers: '{forks}'.")
