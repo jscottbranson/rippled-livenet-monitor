@@ -127,6 +127,7 @@ ADMIN_NOTIFICATIONS = [
                         "mattermost_key": "",
                         "mattermost_channel": "",
                     }
+                ]
             },
 
             "slack": {
