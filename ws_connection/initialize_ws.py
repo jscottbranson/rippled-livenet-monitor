@@ -37,37 +37,36 @@ def start_websocket_loop(args_d):
         loop.set_debug(True)
         logging.info("asyncio debugging enabled.")
 
-    try:
-
-        logging.info("Adding server subscriptions to the event loop.")
-        for server in args_d['table_stock']:
-            server['command'], val_stream_count = get_command(args_d['settings'], val_stream_count)
-            server['ws_retry_count'] = 0
-            server['ws_connection_task'] = loop.create_task(
-                websocket_subscribe(server, args_d['message_queue'])
-            )
-
-        monitor_tasks.append(
-            loop.create_task(
-                mind_connections(
-                    args_d['settings'],
-                    args_d['table_stock'],
-                    args_d['message_queue']
-                )
-            )
+    logging.info("Adding server subscriptions to the event loop.")
+    for server in args_d['table_stock']:
+        server['command'], val_stream_count = get_command(args_d['settings'], val_stream_count)
+        server['ws_retry_count'] = 0
+        server['ws_connection_task'] = loop.create_task(
+            websocket_subscribe(server, args_d['message_queue'])
         )
 
-        logging.warning("Initial websocket asyncio task list is running.")
-        loop.run_forever()
+    monitor_tasks.append(
+        loop.create_task(
+            mind_connections(
+                args_d['settings'],
+                args_d['table_stock'],
+                args_d['message_queue']
+            )
+        )
+    )
 
+    logging.warning("Initial websocket asyncio task list is running.")
+    try:
+        loop.run_forever()
     except KeyboardInterrupt:
         logging.critical("Keyboard interrupt detected, exiting.")
         for server in args_d['table_stock']:
             server['ws_connection_task'].cancel()
         for task in monitor_tasks:
             task.cancel()
-        logging.critical("Final cleanup asyncio task loop is running.")
-        loop.run_forever()
     finally:
+        logging.critical("Final cleanup asyncio task loop is running.")
+        loop.run_until_complete(asyncio.gather(*asyncio.all_tasks(loop), return_exceptions=True))
+        loop.run_until_complete(loop.shutdown_asyncgens())
         loop.close()
         logging.critical("All websocket asyncio loops have been closed.")
