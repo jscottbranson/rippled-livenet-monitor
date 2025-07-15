@@ -40,7 +40,7 @@ async def check_state_change(server, message, notification_queue):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
 
         body = "State changed for server: "
-        body = body + str(f"'{server.get('server_name')}'. ")
+        body = body + str(f"'{server.get('server_name')}' with key '{server.get('pubkey_node')}'. ")
         body = body + str(f"From: '{server.get('server_status')}'. ")
         body = body + str(f"To: '{message.get('server_status')}'. ")
         body = body + str(f"Time UTC: {now}.")

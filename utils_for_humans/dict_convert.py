@@ -57,6 +57,11 @@ NOTIFICATION_DICT = {
                     "mattermost_key": None,
                     "mattermost_channel": None,
                 },
+                {
+                    "mattermost_url": None,
+                    "mattermost_key": None,
+                    "mattermost_channel": None,
+                },
             ],
         },
         "slack": {

@@ -62,6 +62,19 @@ async def check_diff_mode(settings, table, modes):
     logging.info("Checked for differences between monitored server LL index and the mode of all observed LL indexes.")
     return table
 
+async def get_server_key(server):
+    '''
+    Return the 'pubkey_node' for stock nodes or the 'master_key' for validators.
+    '''
+    if 'master_key' in server:
+        server_key = server['master_key'][:5]
+    elif 'pubkey_node' in server:
+        server_key = server['pubkey_node'][:5]
+    else:
+        server_key = "Unknown"
+    return server_key
+
+
 async def alert_resolved_forks(forks, notification_queue):
     '''
     Provide output when a forked server rejoins the network.
@@ -71,8 +84,9 @@ async def alert_resolved_forks(forks, notification_queue):
     :param asyncio.queues.Queue notification_queue: Outbound notification queue
     '''
     for server in forks:
+        server_key = await get_server_key(server)
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-        message = str(f"Previously forked server: '{server.get('server_name')}' '{server.get('master_key')[:6]}'is back in consensus at ledger: '{server.get('ledger_index')}'. Time UTC: {now}.")
+        message = str(f"Previously forked server: '{server.get('server_name')}' '{server_key}' is back in consensus at ledger: '{server.get('ledger_index')}'. Time UTC: {now}.")
         logging.warning(message)
         notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of previously forked servers: '{forks}'.")
@@ -87,7 +101,8 @@ async def alert_new_forks(forks, notification_queue, modes):
     '''
     for server in forks:
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
-        message = str(f"Forked server: '{server.get('server_name')}' '{server.get('master_key')[:6]}' returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
+        server_key = await get_server_key(server)
+        message = str(f"Forked server: '{server.get('server_name')}' '{server_key}' returned index: '{server.get('ledger_index')}'. The consensus mode was: '{modes[0]}'. Time UTC: {now}.")
         logging.warning(message)
         notification_queue.put({'message': message, 'server': server,})
     logging.info("Successfully warned of forked servers: '{forks}'.")
@@ -97,13 +112,20 @@ async def create_unique_id(server):
     Create a unique identifier for each server, since Xahau UNL contains duplicates with the same domain names.
     '''
     server_id = str()
-    identifiers = ['server_name', 'master_key', 'validation_public_key', 'cookie']
+    if 'master_key' in server:
+        identifiers = ['server_name', 'master_key', 'validation_public_key', 'cookie', 'url']
+    elif 'pubkey_node' in server:
+        identifiers = ['server_name', 'pubkey_node', 'url']
+    else:
+        identifiers = ['server_name', 'url']
+        logging.critical(f"Unable to generate a unique ID for server: '{server}'")
+
     for i in identifiers:
         if server.get(i, "novalue") is not None:
             server_id += server.get(str(i), "_no_value")
         else:
             server_id += "__no_value"
-    logging.info(f"Server ID generated: {server_id}")
+        logging.info(f"Server ID generated: {server_id}")
         
     return str(server_id)
 
