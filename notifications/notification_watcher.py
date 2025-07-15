@@ -27,6 +27,7 @@ async def dispatch_notification(settings, notification):
 
         if allowed is True:
             notification_function = "send_" + str(i)
+            logging.info(f"Preparing to send notification via {i}")
 
             possibles = globals().copy()
             possibles.update(locals())

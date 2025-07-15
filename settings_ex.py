@@ -75,6 +75,14 @@ AMENDMENTS = [
 ADMIN_HEARTBEAT = False # should we send heartbeat messages to administrators?
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between heartbeat messages
 
+#### SMTP Settings ####
+SMTP_USERNAME = "foo@bazz.com"
+SMTP_PASSWORD = "secret"
+SMTP_SERVER = "mail.example.com"
+SMTP_SUBMISSION_PORT = 587 # integer
+SMTP_START_TLS = True # Boolean
+SMTP_SUBJECT = "URGENT: Livenet Monitoring Bot Notification"
+
 #### General Notification Settings ####
 KNOWN_NOTIFICATIONS = ['twilio', 'discord', 'mattermost', 'slack', 'smtp']
 
@@ -136,6 +144,11 @@ ADMIN_NOTIFICATIONS = [
 
             "smtp": {
                 "notify_smtp": False,
+                "smtp_recipients": [
+                    {
+                        "smtp_to": "foo@example.com"
+                    },
+                    ]
             },
         },
     },
