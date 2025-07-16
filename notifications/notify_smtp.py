@@ -10,7 +10,6 @@ async def send_message(settings, email_message):
     '''
     Send the SMTP notification.
     '''
-
     await send(
             email_message,
             hostname=settings.SMTP_SERVER,
@@ -26,8 +25,8 @@ async def compile_email(settings, message_body, recipient):
     '''
     email_message = EmailMessage()
     email_message['From'] = settings.SMTP_USERNAME
-    email_message['To'] = recipient
-    email_message['Subject'] = settings.SMTP_SUBJECT
+    email_message['To'] = recipient['smtp_to']
+    email_message['Subject'] = recipient['smtp_subject']
     email_message.set_content(message_body)
 
     return email_message
@@ -42,8 +41,8 @@ async def send_email(settings, notification):
 
     if email_settings and message_body:
         for recipient in email_settings.get('smtp_recipients'):
-            logging.critical(f"preparing to send smtp message to: {recipient}.\n{message_body}\n\n")
-            email_message = await compile_email(settings, message_body, recipient['smtp_to'])
+            logging.info(f"preparing to send smtp message to: {recipient}.\n{message_body}\n\n")
+            email_message = await compile_email(settings, message_body, recipient)
             await send_message(settings, email_message)
 
 async def send_smtp(settings, notification):
@@ -55,7 +54,7 @@ async def send_smtp(settings, notification):
     :param dict notification: Notification message and contact information.
     '''
     if settings.SEND_SMTP is True:
-        logging.warning(f"Simulating sending Email message: '{notification.get('message')}'.")
+        logging.info(f"Sending Email message: '{notification.get('message')}'.")
         smtp_responses = await send_email(settings, notification)
     else:
         logging.info(f"SMTP notifications disabled in settings. Ignoring: '{notification}'.")

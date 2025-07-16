@@ -11,3 +11,17 @@ typing_extensions==4.14.1
 wcwidth==0.2.13
 websockets==15.0.1
 yarl==1.20.1
+aiohappyeyeballs==2.6.1
+aiohttp==3.12.14
+aiosignal==1.4.0
+aiosmtplib==4.0.1
+attrs==25.3.0
+frozenlist==1.7.0
+idna==3.10
+multidict==6.6.3
+prettytable==3.16.0
+propcache==0.3.2
+typing_extensions==4.14.1
+wcwidth==0.2.13
+websockets==15.0.1
+yarl==1.20.1

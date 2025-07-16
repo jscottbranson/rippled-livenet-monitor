@@ -15,7 +15,7 @@ OUTPUT_FILE = 'settings_new.py'
 
 NOTIFY_TWILIO = False
 NOTIFY_DISCORD = False
-NOTIFY_MATTERMOST = True
+NOTIFY_MATTERMOST = False
 NOTIFY_SLACK = False
 NOTIFY_SMTP = False
 
@@ -28,6 +28,9 @@ DISCORD_TOKEN = ""
 MATTERMOST_URL = "https://example.com"
 MATTERMOST_KEY = "foo"
 MATTERMOST_CHANNEL = "@bazz"
+
+SMTP_RECIPIENT = "foo@bazz.com"
+SMTP_SUBJECT = "Urgent livenet monitoring message"
 
 NOTIFICATION_DICT = {
     "notifications": {
@@ -69,6 +72,12 @@ NOTIFICATION_DICT = {
         },
         "smtp": {
             "notify_smtp": None,
+            "smtp_recipients": [
+                {
+                    "smtp_to": None,
+                    "smtp_subject": None
+                },
+            ],
         }
     },
 }
@@ -156,6 +165,10 @@ def build_notification_dict():
     mattermost['mattermost_servers'][0]['mattermost_url'] = MATTERMOST_URL
     mattermost['mattermost_servers'][0]['mattermost_key'] = MATTERMOST_KEY
     mattermost['mattermost_servers'][0]['mattermost_channel'] = MATTERMOST_CHANNEL
+
+    # Set SMTP recipient info
+    smtp['smtp_recipients'][0]['smtp_to'] = SMTP_RECIPIENT
+    smtp['smtp_recipients'][0]['smtp_subject'] = SMTP_SUBJECT
 
 if __name__ == '__main__':
     build_notification_dict()

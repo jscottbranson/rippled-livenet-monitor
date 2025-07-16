@@ -81,7 +81,6 @@ SMTP_PASSWORD = "secret"
 SMTP_SERVER = "mail.example.com"
 SMTP_SUBMISSION_PORT = 587 # integer
 SMTP_START_TLS = True # Boolean
-SMTP_SUBJECT = "URGENT: Livenet Monitoring Bot Notification"
 
 #### General Notification Settings ####
 KNOWN_NOTIFICATIONS = ['twilio', 'discord', 'mattermost', 'slack', 'smtp']
@@ -146,7 +145,8 @@ ADMIN_NOTIFICATIONS = [
                 "notify_smtp": False,
                 "smtp_recipients": [
                     {
-                        "smtp_to": "foo@example.com"
+                        "smtp_to": "foo@example.com",
+                        "smtp_subject": "Livenet Monitor Heartbeat",
                     },
                     ]
             },
