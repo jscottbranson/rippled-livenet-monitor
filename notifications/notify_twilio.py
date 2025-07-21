@@ -1,7 +1,9 @@
+'''
+Send notifications via SMS using the Twillio API.
+'''
 import os
 import logging
 import socket
-import asyncio
 
 import aiohttp
 
@@ -21,7 +23,9 @@ async def get_account_info(settings):
             auth_token = os.environ['TWILIO_AUTH_TOKEN']
         logging.info("Successfully located Twilio auth credentials.")
     except KeyError as error:
-        logging.critical(f"Unable to locate Twilio auth credentials. Error: {error}.")
+        logging.critical(
+            "Unable to locate Twilio auth credentials. Error: '%s'.", error
+        )
 
     return sid, auth_token
 
@@ -50,7 +54,9 @@ async def send_message(sid, auth_token, phone_from, phone_to, message_body):
     ) as error:
         # Double check these exceptions
         # Retry SMS messages that throw exceptions, if appropriate
-        logging.critical(f"Error sending Twilio SMS: '{error}'.")
+        logging.critical(
+            "Error sending Twilio SMS: '%s'.", error
+        )
 
 async def clean_number(number):
     '''
@@ -79,11 +85,16 @@ async def send_twilio(settings, notification):
             phone_from = await clean_number(i['phone_from'])
             phone_to = await clean_number(i['phone_to'])
 
-            logging.info(f"Preparing to send SMS message: '{notification}'.")
+            logging.info("Preparing to send SMS message: '%s'.", notification)
             sms_response = await send_message(
                 sid, auth_token, phone_from, phone_to, notification['message']
             )
-            logging.info(f"Successfully sent SMS message: {notification['message']}. Received response {sms_response}.")
+            logging.info(
+                "Successfully sent SMS message: %s. Received response %s.",
+                notification.get('message'), sms_response
+            )
 
     else:
-        logging.info(f"Twilio messages disabled in settings. Ignored SMS message: '{notification}'.")
+        logging.info(
+            "Twilio messages disabled in settings. Ignored SMS message: '%s'.", notification
+        )

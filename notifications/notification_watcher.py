@@ -27,7 +27,7 @@ async def dispatch_notification(settings, notification):
 
         if allowed is True:
             notification_function = "send_" + str(i)
-            logging.info(f"Preparing to send notification via {i}")
+            logging.info("Preparing to send notification via '%s'", i)
 
             possibles = globals().copy()
             possibles.update(locals())
@@ -35,7 +35,10 @@ async def dispatch_notification(settings, notification):
             if method:
                 await method(settings, notification)
             else:
-                logging.warning(f"Error locating the function for notification method: '{i}'. To send notification: '{notification}'.")
+                logging.warning(
+                    "Error locating the function for notification method: \
+                    '%s'. To send notification: '%s'.", i, notification
+                )
 
 async def notifications(args_d):
     '''
@@ -59,7 +62,9 @@ async def notifications(args_d):
             logging.critical("Keyboard interrupt detected. Stopping notification watcher.")
             break
         except Exception as error:
-            logging.critical(f"An otherwise uncaught exception occurred in the notification watcher: '{error}'.")
+            logging.critical(
+                "The notification watcher had an otherwise uncaught exception: '%s'.", error
+            )
 
 def start_notifications(args_d):
     '''

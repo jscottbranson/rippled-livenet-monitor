@@ -24,7 +24,7 @@ async def discord_post(settings, notification):
         for server in discord_settings.get('discord_servers'):
             discord_url = f"{settings.DISCORD_WEBHOOK_URL}{server.get('discord_id')}/{server.get('discord_token')}"
 
-            logging.info(f"Preparing to send Discord message: '{message}'.")
+            logging.info("Preparing to send Discord message: '%s'.", message)
 
             try:
                 async with aiohttp.ClientSession() as session:
@@ -39,7 +39,9 @@ async def discord_post(settings, notification):
                 OSError,
                 socket.gaierror,
             ) as error:
-                logging.error(f"Error sending Discord message: '{error}'.")
+                logging.error(
+                    "Error sending Discord message: '%s'.", error
+                )
                 # It probably makes sense to retry sending the message here.
 
     return responses
@@ -48,7 +50,7 @@ async def rate_limit(settings, notification, response):
     '''
     Deal with Discord rate limiting.
     '''
-    logging.warning(f"Discord's rate limit exceeded: '{response}'.")
+    logging.warning("Exceeded Discord's rate limit: '%s'.", response)
     await asyncio.sleep(float(response.headers.get('retry-after')) + 0.25)
     await discord_post(settings, notification)
 
@@ -61,7 +63,9 @@ async def discord_response(settings, notification, response):
     elif int(response.status) == 429:
         await rate_limit(settings, notification, response)
     else:
-        logging.warning(f"Error code encountered when sending to  Discord: '{response}'.")
+        logging.warning(
+            "Error code encountered when sending to  Discord: '%s'.", response
+        )
         # Call a function to deal with other error codes
 
 async def send_discord(settings, notification):
@@ -77,4 +81,6 @@ async def send_discord(settings, notification):
         for response in server_responses:
             await discord_response(settings, notification, response)
     else:
-        logging.info(f"Discord notifications are disabled in settings. Ignoring message: '{notification}'.")
+        logging.info(
+            "Discord notifications are disabled in settings. Ignoring message: '%s'.", notification
+        )
