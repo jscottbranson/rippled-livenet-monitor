@@ -3,9 +3,6 @@ Process validation stream messages.
 '''
 import logging
 import time
-import asyncio
-from copy import deepcopy
-
 
 async def del_dup_validators(table):
     '''
@@ -23,9 +20,13 @@ async def del_dup_validators(table):
             val_keys.append(validator.get('master_key'))
             table_new.append(validator)
         else:
-            logging.warning(f"Removed duplicate validator: '{validator}'.")
+            logging.warning("Removed duplicate validator: '%s'.", validator)
 
-    logging.info(f"Finished removing duplicate validators. Original table had: '{len(table)}' items. New table has: '{len(table_new)}' items.")
+    logging.info(
+        "Finished removing duplicate validators. Original table had: '%d' items. \
+        New table has: '%d' items.",
+        len(table), len(table_new)
+    )
     return val_keys, table_new
 
 async def clean_validations(settings, val_keys, table, processed_validations):
@@ -41,8 +42,11 @@ async def clean_validations(settings, val_keys, table, processed_validations):
     '''
     if len(processed_validations) >= settings.PROCESSED_VAL_MAX:
         half_list = settings.PROCESSED_VAL_MAX / 2
-        logging.info(f"Processed validation list >= '{settings.PROCESSED_VAL_MAX}'. Deleting: '{half_list}' items.")
-        del processed_validations[0:int(half_list)]
+        logging.info(
+            "Processed validation list >= '%d'. Deleting: '%d' items.",
+            settings.PROCESSED_VAL_MAX, half_list
+        )
+        del processed_validations[0:half_list]
 
         if settings.REMOVE_DUP_VALIDATORS:
             val_keys, table = await del_dup_validators(table)
@@ -98,13 +102,18 @@ async def process_validations(settings, val_keys, table_validator, processed_val
     :param dict message: JSON decoded message to process
     '''
     # Update the table
-    logging.info(f"Preparing to update validator table based on message from '{message['server_url']}'.")
+    logging.info(
+        "Preparing to update validator table based on message from '%s'.", message.get('server_url')
+    )
     table_validator = await update_table_validator(table_validator, message)
-    logging.info(f"Updated validator table based on message from '{message['server_url']}'.")
+    logging.info("Updated validator table based on message from '%s'.", message.get('server_url'))
     # Add the message so we don't process duplicates
     processed_validations.append(message['data']['signature'])
-    logging.info(f"Appended validation from '{message['server_url']}' to received tracking queue.")
-    # Prune received message queue and remove duplicate validators from tracking (depending on settings)
+    logging.info(
+        "Appended validation from '%s' to received tracking queue.", message.get('server_url')
+    )
+    # Prune received message queue and remove duplicate validators from tracking
+    # (depending on settings)
     logging.info("Checking to see if we need to clean things")
     val_keys, table_validator, processed_validations = await clean_validations(
         settings, val_keys, table_validator, processed_validations
@@ -118,7 +127,7 @@ async def log_validations(settings, message):
     Log validations defined in the settings file.
     '''
     if message['data'].get('master_key') in settings.LOG_VALIDATIONS_FROM:
-        logging.critical(f"Logged validation: '{message}'.")
+        logging.critical("Logged validation: '%s'.", message)
 
 async def check_validations(settings, val_keys, table_validator, processed_validations, message):
     '''
@@ -131,7 +140,7 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
     processing duplicate messages)
     :param dict message: JSON decoded message to process
     '''
-    logging.debug(f"New validation message from '{message.get('server_url')}'.")
+    logging.debug("New validation message from '%s'.", message.get('server_url'))
     if message['data'].get('master_key') in val_keys or message['data'].get('validation_public_key') in val_keys \
        and message['data'].get('validation_public_key'):
         if message['data']['signature'] not in processed_validations:
@@ -140,6 +149,6 @@ async def check_validations(settings, val_keys, table_validator, processed_valid
             )
             await log_validations(settings, message)
     else:
-        logging.debug(f"Ignored validation message from: '{message['server_url']}'.")
+        logging.debug("Ignored validation message from: '%s'.", message.get('server_url'))
 
     return val_keys, table_validator, processed_validations

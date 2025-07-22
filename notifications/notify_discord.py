@@ -76,11 +76,6 @@ async def send_discord(settings, notification):
     :param settings: Config file
     :param dict notification: Recipient information and message keys
     '''
-    if settings.SEND_DISCORD is True:
-        server_responses = await discord_post(settings, notification)
-        for response in server_responses:
-            await discord_response(settings, notification, response)
-    else:
-        logging.info(
-            "Discord notifications are disabled in settings. Ignoring message: '%s'.", notification
-        )
+    server_responses = await discord_post(settings, notification)
+    for response in server_responses:
+        await discord_response(settings, notification, response)

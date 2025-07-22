@@ -23,9 +23,12 @@ async def dispatch_notification(settings, notification):
 
     for i in settings.KNOWN_NOTIFICATIONS:
         if i in recipients.keys():
+            # Check if the individual recipient enabled a given notification type
             allowed = recipients.get(str(i)).get('notify_' + str(i))
+            # Check if the admin has enabled a given notification type
+            allowed_global = getattr(settings, f"SEND_{i.upper()}", None)
 
-        if allowed is True:
+        if allowed is True and allowed_global is True:
             notification_function = "send_" + str(i)
             logging.info("Preparing to send notification via '%s'", i)
 
@@ -39,6 +42,11 @@ async def dispatch_notification(settings, notification):
                     "Error locating the function for notification method: \
                     '%s'. To send notification: '%s'.", i, notification
                 )
+        else:
+            logging.info(
+                "Skipping notification to: '%s' as notification type: '%s' is not enabled.",
+                recipients, i
+            )
 
 async def notifications(args_d):
     '''

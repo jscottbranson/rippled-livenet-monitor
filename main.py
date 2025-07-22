@@ -4,10 +4,6 @@ Run the program.
 import logging
 import settings
 
-'''
-Subscribe to the server command on multiple servers, then pass the resultant messages
-into a queue for processing.
-'''
 from sys import exit
 from multiprocessing import Process, Queue
 import logging
@@ -18,7 +14,7 @@ from notifications.notification_watcher import start_notifications
 from misc import generate_tables
 
 
-def start_bot(settings):
+def start_bot():
     '''
     Start multiprocessing processes.
     '''
@@ -49,7 +45,7 @@ def start_bot(settings):
                 process.join()
             logging.warning("Initial multiprocessing list is running.")
 
-        except (KeyboardInterrupt):
+        except KeyboardInterrupt:
             logging.critical("Keyboard interrupt detected, exiting.")
             logging.critical("Final multiprocessing cleanup is running.")
         finally:
@@ -69,4 +65,4 @@ def set_logging():
 
 if __name__ == '__main__':
     set_logging()
-    start_bot(settings)
+    start_bot()

@@ -2,8 +2,6 @@
 Make pretty console output.
 '''
 import logging
-import time
-import asyncio
 import textwrap
 from copy import deepcopy
 
@@ -69,7 +67,7 @@ async def print_table_validation(table):
 
     for validator in table_new:
         pretty_table.add_row([
-            validator['server_name'],
+            validator['server_name'].lower(),
             validator['master_key'],
             validator['validation_public_key'],
             validator['server_version'],
@@ -144,9 +142,13 @@ async def format_table_server(table):
                 server['load_factor'] = round(server['load_factor'] / server['load_base'], 1)
                 server['load_factor'] = red + str(server['load_factor']) + color_reset
         # Calculate Open Ledger Fee
-        server['load_factor_fee_escalation'] = await fee_calc(server['load_factor_fee_escalation'], server['fee_base'], server['load_base'])
+        server['load_factor_fee_escalation'] = await fee_calc(
+            server['load_factor_fee_escalation'], server['fee_base'], server['load_base']
+        )
         # Calculate Queue Fee
-        server['load_factor_fee_queue'] = await fee_calc(server['load_factor_fee_queue'], server['fee_base'], server['load_base'])
+        server['load_factor_fee_queue'] = await fee_calc(
+            server['load_factor_fee_queue'], server['fee_base'], server['load_base']
+        )
     return table
 
 async def print_table_server(table):

@@ -2,7 +2,6 @@
 Functions used across response processor.
 '''
 import logging
-import asyncio
 from copy import deepcopy
 
 
@@ -20,16 +19,12 @@ async def copy_stock(table_stock):
             {x: deepcopy(server[x]) for x in server if x != 'ws_connection_task'}
         )
     return table_stock_new
-'''
-Convert a version integer returned by servers on the XRP Ledger
-into a human readable version number.
 
-This is basically a Python3 translation of the XRPScan XRPL-Server-Version
-repo: https://github.com/xrpscan/xrpl-server-version/blob/main/index.js
-'''
 async def decode_version(version):
     '''
     Decode XRP Ledger version numbers.
+    This is basically a Python3 translation of the XRPScan XRPL-Server-Version
+    repo: https://github.com/xrpscan/xrpl-server-version/blob/main/index.js
 
     :param int version: Version integer from a XRP Ledger server
 

@@ -80,13 +80,10 @@ async def send_smtp(settings, notification):
     :param settings: Config file
     :param dict notification: Notification message and contact information.
     '''
-    if settings.SEND_SMTP is True:
-        logging.info(
-            "Sending Email message: '%s'.", notification.get('message')
-        )
-        # Add response error handling
-        smtp_responses = await send_email(settings, notification)
-        for response in smtp_responses:
-            await process_response(settings, notification, response)
-    else:
-        logging.info("SMTP notifications disabled in settings. Ignoring: '%s'.", notification)
+    logging.info(
+        "Sending Email message: '%s'.", notification.get('message')
+    )
+    # Add response error handling
+    smtp_responses = await send_email(settings, notification)
+    #for response in smtp_responses:
+    #    await process_response(settings, notification, response)

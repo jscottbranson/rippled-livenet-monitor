@@ -77,24 +77,18 @@ async def send_twilio(settings, notification):
     :param settings: Config file
     :param dict notification: phone_from, phone_to, and message keys
     '''
-    if settings.SEND_TWILIO is True:
-        sid, auth_token = await get_account_info(settings)
+    sid, auth_token = await get_account_info(settings)
 
-        twilio_settings = notification['server']['notifications']['twilio']
-        for i in twilio_settings.get('phone_numbers'):
-            phone_from = await clean_number(i['phone_from'])
-            phone_to = await clean_number(i['phone_to'])
+    twilio_settings = notification['server']['notifications']['twilio']
+    for i in twilio_settings.get('phone_numbers'):
+        phone_from = await clean_number(i['phone_from'])
+        phone_to = await clean_number(i['phone_to'])
 
-            logging.info("Preparing to send SMS message: '%s'.", notification)
-            sms_response = await send_message(
-                sid, auth_token, phone_from, phone_to, notification['message']
-            )
-            logging.info(
-                "Successfully sent SMS message: %s. Received response %s.",
-                notification.get('message'), sms_response
-            )
-
-    else:
+        logging.info("Preparing to send SMS message: '%s'.", notification)
+        sms_response = await send_message(
+            sid, auth_token, phone_from, phone_to, notification['message']
+        )
         logging.info(
-            "Twilio messages disabled in settings. Ignored SMS message: '%s'.", notification
+            "Successfully sent SMS message: %s. Received response %s.",
+            notification.get('message'), sms_response
         )

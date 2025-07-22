@@ -45,7 +45,9 @@ class ResponseProcessor:
             if self.table_validator:
                 await console_output.print_table_validation(self.table_validator)
                 if self.settings.PRINT_AMENDMENTS:
-                    await console_output.print_table_amendments(self.table_validator, self.settings.AMENDMENTS)
+                    await console_output.print_table_amendments(
+                        self.table_validator, self.settings.AMENDMENTS
+                    )
             self.time_last_output = time.time()
 
     async def evaluate_forks(self):
@@ -53,7 +55,9 @@ class ResponseProcessor:
         Call functions to check for forked servers.
         '''
         if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
-            self.ll_modes, self.table_stock, self.table_validator = await fork_checker(self.settings, self.table_stock, self.table_validator, self.notification_queue)
+            self.ll_modes, self.table_stock, self.table_validator = await fork_checker(
+                self.settings, self.table_stock, self.table_validator, self.notification_queue
+            )
             self.time_fork_check = time.time()
 
     async def sort_new_messages(self, message):
@@ -88,7 +92,7 @@ class ResponseProcessor:
             )
 
         else:
-            logging.warning(f"Message received that couldn't be sorted: '{message}'.")
+            logging.warning("Message received that couldn't be sorted: '%s'.", message)
 
     async def generate_val_keys(self):
         '''
@@ -100,7 +104,9 @@ class ResponseProcessor:
         for i in val_keys:
             if i:
                 self.val_keys.append(i)
-        logging.warning(f"Created initial validation key tracking list with: '{len(self.val_keys)}' items.")
+        logging.warning(
+            "Created initial validation key tracking list with: '%d' items.", len(self.val_keys)
+        )
 
     async def heartbeat_message(self):
         '''
@@ -134,17 +140,23 @@ class ResponseProcessor:
         while True:
             try:
                 message = self.message_queue.get()
+                #logging.warning("sorting")
                 await self.sort_new_messages(message)
+                #logging.warning("evaluating forks")
                 await self.evaluate_forks()
+                #logging.warning("console output")
                 await self.process_console_output()
+                #logging.warning("heartbeat")
                 await self.heartbeat_message()
             except KeyError as error :
-                logging.warning(f"Error: '{error}'. Received an unexpected message: '{message}'.")
+                logging.warning(
+                    "Error: '%s'. Received an unexpected message: '%s'.", error, message
+                )
             except (asyncio.CancelledError, KeyboardInterrupt):
                 logging.critical("Keyboard interrupt detected. Response processor stopped.")
                 break
             except Exception as error:
-                logging.critical(f"Otherwise uncaught exception in response processor: '{error}'.")
+                logging.critical("Otherwise uncaught exception in response processor: '%s'.", error)
 
 def start_output_processing(args_d):
     '''

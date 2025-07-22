@@ -53,7 +53,7 @@ def create_table_stock(settings):
             if key in server:
                 server_dict[key] = server.get(key)
         table.append(server_dict)
-    logging.warning(f"Initial server list created with {len(table)} items.")
+    logging.warning("Initial server list created with '%d' items.", len(table))
     return table
 
 def create_table_validation(settings):
@@ -100,6 +100,6 @@ def create_table_validation(settings):
             if key in validator:
                 val_dict[key] = validator.get(key)
         table.append(val_dict)
-    logging.warning(f"Successfully created initial validator list with: {len(table)} items.")
+    logging.warning("Initial validator list created with: '%d' items.", len(table))
 
     return table

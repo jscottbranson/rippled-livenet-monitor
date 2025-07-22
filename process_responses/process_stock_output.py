@@ -4,7 +4,6 @@ This output is not relevant for monitoring validations.
 '''
 import logging
 import time
-import asyncio
 
 
 async def update_table_ledger(table, message):
@@ -23,7 +22,10 @@ async def update_table_ledger(table, message):
                 if key in message['data'].keys():
                     server[key] = message['data'][key]
             server['time_updated'] = time.strftime("%y-%m-%d %H:%M:%S", time.gmtime())
-            logging.info(f"Successfully updated the table with ledger closed message from: '{server['url']}'.")
+            logging.info(
+                "Successfully updated the table with ledger closed message from: '%s'.",
+                server.get('url')
+            )
 
     return table
 
@@ -40,7 +42,7 @@ async def check_state_change(server, message, notification_queue):
         now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
 
         body = "State changed for server: "
-        body = body + str(f"'{server.get('server_name')}' with key '{server.get('pubkey_node')}'. ")
+        body = body + str(f"'{server.get('server_name')}' with key '{server.get('pubkey_node')[:5]}'. ")
         body = body + str(f"From: '{server.get('server_status')}'. ")
         body = body + str(f"To: '{message.get('server_status')}'. ")
         body = body + str(f"Time UTC: {now}.")
@@ -62,7 +64,9 @@ async def update_table_server(table, notification_queue, message):
     :param asyncio.queues.Queue notification_queue: Message queue to send via SMS
     :param dict message: New server subscription message
     '''
-    logging.info(f"Server status message received '{message}'. Preparing to update the table.")
+    logging.info(
+        "Server status message received '%s'. Preparing to update the table.", message
+    )
     if message['data'].get('result'):
         message_result = message['data']['result']
     elif message['data'].get('type') == 'serverStatus':

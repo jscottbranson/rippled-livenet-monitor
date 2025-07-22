@@ -4,7 +4,6 @@ Check for servers whose last ledger index number is outside of a tolerable range
 import time
 import logging
 from copy import deepcopy
-import asyncio
 
 from .common import copy_stock
 
@@ -59,7 +58,10 @@ async def check_diff_mode(settings, table, modes):
             else:
                 server['time_forked'] = None
                 server['forked'] = False
-    logging.info("Checked for differences between monitored server LL index and the mode of all observed LL indexes.")
+    logging.info(
+        "Checked for differences between monitored server LL index \
+        and the mode of all observed LL indexes."
+    )
     return table
 
 async def get_server_key(server):
@@ -109,7 +111,8 @@ async def alert_new_forks(forks, notification_queue, modes):
 
 async def create_unique_id(server):
     '''
-    Create a unique identifier for each server, since Xahau UNL contains duplicates with the same domain names.
+    Create a unique identifier for each server,
+    since Xahau UNL contains duplicates with the same domain names.
     '''
     server_id = str()
     if 'master_key' in server:
@@ -118,15 +121,15 @@ async def create_unique_id(server):
         identifiers = ['server_name', 'pubkey_node', 'url']
     else:
         identifiers = ['server_name', 'url']
-        logging.critical(f"Unable to generate a unique ID for server: '{server}'")
+        logging.critical("Unable to generate a unique ID for server: '%s'", server)
 
     for i in identifiers:
         if server.get(i, "novalue") is not None:
             server_id += server.get(str(i), "_no_value")
         else:
             server_id += "__no_value"
-        logging.info(f"Server ID generated: {server_id}")
-        
+        logging.info("Server ID generated: %s", server_id)
+
     return str(server_id)
 
 async def check_fork_changes(old_tables, new_tables):
@@ -158,9 +161,12 @@ async def check_fork_changes(old_tables, new_tables):
                     elif old_server.get('forked') is True and new_server.get('forked') is False:
                         forks_resolved.append(new_server)
                     else:
-                        logging.warning(f"Confused by new server:\n'{new_server}'\nOld server: '{old_server}'.")
+                        logging.warning(
+                            "Confused by new server:\n'%s'\nOld server: '%s'.",
+                            new_server, old_server
+                        )
             except Exception as error:
-                logging.warning(f"Error checking for changes in new/resolved forks: {error}")
+                logging.warning("Error checking for changes in new/resolved forks: %s", error)
     logging.info("Done checking for changes in forks.")
     return forks_new, forks_resolved
 
@@ -182,11 +188,15 @@ async def fork_checker(settings, table_stock, table_validator, notification_queu
     previous_tables = [await copy_stock(table_stock), deepcopy(table_validator)]
     modes = await get_modes(table_stock + table_validator)
     if modes and len(modes) > 1:
-        logging.info(f"Multiple modes found for last ledger indexes: '{modes}'. Skipping fork check.")
+        logging.info(
+            "Multiple modes found for last ledger indexes: '%d'. Skipping fork check.", modes
+        )
     else:
         table_stock = await check_diff_mode(settings, table_stock, modes)
         table_validator = await check_diff_mode(settings, table_validator, modes)
-        forks_new, forks_resolved = await check_fork_changes(previous_tables, [table_stock, table_validator])
+        forks_new, forks_resolved = await check_fork_changes(
+            previous_tables, [table_stock, table_validator]
+        )
         if forks_new:
             await alert_new_forks(forks_new, notification_queue, modes)
         if forks_resolved:

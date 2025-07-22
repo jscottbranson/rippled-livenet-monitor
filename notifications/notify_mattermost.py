@@ -61,9 +61,6 @@ async def send_mattermost(settings, notification):
     :param settings: Config file
     :param dict notification: recipient information and message text
     '''
-    if settings.SEND_MATTERMOST is True:
-        server_responses = await mattermost_post(notification)
-        for response in server_responses:
-            await mattermost_response(settings, notification, response)
-    else:
-        logging.info("Mattermost notifications disabled in settings. Ignoring: '%s'.", notification)
+    server_responses = await mattermost_post(notification)
+    for response in server_responses:
+        await mattermost_response(settings, notification, response)
