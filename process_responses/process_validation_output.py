@@ -41,7 +41,7 @@ async def clean_validations(settings, val_keys, table, processed_validations):
     :param list processed_validations: Prune this
     '''
     if len(processed_validations) >= settings.PROCESSED_VAL_MAX:
-        half_list = settings.PROCESSED_VAL_MAX / 2
+        half_list = settings.PROCESSED_VAL_MAX // 2
         logging.info(
             "Processed validation list >= '%d'. Deleting: '%d' items.",
             settings.PROCESSED_VAL_MAX, half_list

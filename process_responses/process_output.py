@@ -140,13 +140,9 @@ class ResponseProcessor:
         while True:
             try:
                 message = self.message_queue.get()
-                #logging.warning("sorting")
                 await self.sort_new_messages(message)
-                #logging.warning("evaluating forks")
                 await self.evaluate_forks()
-                #logging.warning("console output")
                 await self.process_console_output()
-                #logging.warning("heartbeat")
                 await self.heartbeat_message()
             except KeyError as error :
                 logging.warning(
