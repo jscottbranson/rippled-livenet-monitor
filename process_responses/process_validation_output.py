@@ -40,6 +40,7 @@ async def clean_validations(settings, val_keys, table, processed_validations):
     :param list table: Dictionaries for each validator being tracked
     :param list processed_validations: Prune this
     '''
+    settings.PROCESSED_VAL_MAX = int(settings.PROCESSED_VAL_MAX)
     if len(processed_validations) >= settings.PROCESSED_VAL_MAX:
         half_list = settings.PROCESSED_VAL_MAX // 2
         logging.info(

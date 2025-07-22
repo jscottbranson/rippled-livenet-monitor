@@ -69,10 +69,10 @@ async def mind_connections(settings, ws_servers, message_queue):
         ws_servers_del = []
         ws_servers_add = []
         try:
-            await asyncio.sleep(settings.WS_RETRY)
+            await asyncio.sleep(int(settings.WS_RETRY))
             for server in ws_servers:
                 if server['ws_connection_task'].done()\
-                        and server['ws_retry_count'] <= settings.MAX_CONNECT_ATTEMPTS:
+                        and server['ws_retry_count'] <= int(settings.MAX_CONNECT_ATTEMPTS):
                     ws_add = await resubscribe_client(server, message_queue)
                     ws_servers_del.append(server)
                     ws_servers_add.append(ws_add)

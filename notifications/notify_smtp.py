@@ -13,7 +13,7 @@ async def send_message(settings, email_message):
         status, response = await send(
                 email_message,
                 hostname=settings.SMTP_SERVER,
-                port=settings.SMTP_SUBMISSION_PORT,
+                port=int(settings.SMTP_SUBMISSION_PORT),
                 start_tls=settings.SMTP_START_TLS,
                 username=settings.SMTP_USERNAME,
                 password=settings.SMTP_PASSWORD,

@@ -39,7 +39,7 @@ class ResponseProcessor:
         :param settings: Config file
         '''
         if self.settings.CONSOLE_OUT is True \
-           and time.time() - self.time_last_output >= self.settings.CONSOLE_REFRESH_TIME:
+           and time.time() - self.time_last_output >= int(self.settings.CONSOLE_REFRESH_TIME):
             os.system('clear')
             await console_output.print_table_server(self.table_stock)
             if self.table_validator:
@@ -54,7 +54,7 @@ class ResponseProcessor:
         '''
         Call functions to check for forked servers.
         '''
-        if time.time() - self.time_fork_check > self.settings.FORK_CHECK_FREQ:
+        if time.time() - self.time_fork_check > int(self.settings.FORK_CHECK_FREQ):
             self.ll_modes, self.table_stock, self.table_validator = await fork_checker(
                 self.settings, self.table_stock, self.table_validator, self.notification_queue
             )
@@ -113,7 +113,7 @@ class ResponseProcessor:
         Send an SMS message periodically.
         '''
         if self.settings.ADMIN_HEARTBEAT \
-           and time.time() - self.last_heartbeat >= self.settings.HEARTBEAT_INTERVAL:
+           and time.time() - self.last_heartbeat >= int(self.settings.HEARTBEAT_INTERVAL):
             now = time.strftime("%m-%d %H:%M:%S", time.gmtime())
             message = "Livenet Monitoring Bot heartbeat. "
             message = message + str(f"LL mode: '{self.ll_modes[0]}'. ")

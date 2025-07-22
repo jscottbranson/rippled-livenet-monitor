@@ -15,7 +15,7 @@ def get_command(settings, val_stream_count):
     '''
     if not settings.VALIDATORS:
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
-    elif val_stream_count >= settings.MAX_VAL_STREAMS:
+    elif val_stream_count >= int(settings.MAX_VAL_STREAMS):
         command = {"command": "subscribe", "streams": ["server", "ledger"], "ledger_index": "current"}
     else:
         command = {"command": "subscribe", "streams": ["server", "ledger", "validations"], "ledger_index": "current"}

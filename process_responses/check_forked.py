@@ -51,7 +51,7 @@ async def check_diff_mode(settings, table, modes):
     for server in table:
         index = server.get('ledger_index')
         if index and server.get('server_status') != "disconnected from monitoring":
-            if abs(int(modes[0]) - int(index)) > settings.LL_FORK_CUTOFF:
+            if abs(int(modes[0]) - int(index)) > int(settings.LL_FORK_CUTOFF):
                 if not server.get('forked'):
                     server['time_forked'] = time.time()
                 server['forked'] = True
