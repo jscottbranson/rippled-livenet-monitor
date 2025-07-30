@@ -72,7 +72,7 @@ AMENDMENTS = [
 ]
 
 #### Administrative Notification ####
-ADMIN_HEARTBEAT = False # should we send heartbeat messages to administrators?
+ADMIN_HEARTBEAT = False # Send heartbeat messages to administrators?
 HEARTBEAT_INTERVAL = 3600 # Time in seconds between heartbeat messages
 
 #### SMTP Settings ####
@@ -84,6 +84,12 @@ SMTP_START_TLS = True # Boolean
 
 #### General Notification Settings ####
 KNOWN_NOTIFICATIONS = ['twilio', 'discord', 'mattermost', 'slack', 'smtp']
+
+# Notification retries will back off by increasing time exponentially.
+# If 'NOTIFY_RETRY_TIME = 10', the notification will be retried after 10 sec,
+# 20 sec, 40 sec, etc. until 'NOTIFY_RETRY_MAX' is reached.
+NOTIFY_RETRY_MAX = 25 # Number of times to retry sending failed notification messages
+NOTIFY_RETRY_SLEEP_TIME = 10 # Seconds to initially wait before retrying a failed notification
 
 # Specify which notification methods will be enabled.
 # Messages will be dropped if not enabled here, even if individual clients enable them.

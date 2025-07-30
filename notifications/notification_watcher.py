@@ -21,6 +21,7 @@ async def dispatch_notification(settings, notification):
     '''
     recipients = notification['server']['notifications']
 
+    tasks = []
     for i in settings.KNOWN_NOTIFICATIONS:
         if i in recipients.keys():
             # Check if the individual recipient enabled a given notification type
@@ -36,17 +37,22 @@ async def dispatch_notification(settings, notification):
             possibles.update(locals())
             method = possibles.get(notification_function)
             if method:
-                await method(settings, notification)
+                tasks.append(
+                    asyncio.create_task(method(settings, notification))
+                )
             else:
                 logging.warning(
-                    "Error locating the function for notification method: \
-                    '%s'. To send notification: '%s'.", i, notification
+                    "Error locating the function for notification method: '%s'. "
+                    "To send notification: '%s'.", i, notification
                 )
         else:
             logging.info(
                 "Skipping notification to: '%s' as notification type: '%s' is not enabled.",
                 recipients, i
             )
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+        logging.debug("Finished notification task list")
 
 async def notifications(args_d):
     '''
@@ -61,10 +67,13 @@ async def notifications(args_d):
     :param dict args_d: Default settings and queues.
     '''
     logging.info("Notification watcher is running.")
+    notification_queue = args_d['notification_queue']
     while True:
         try:
-            notification = args_d['notification_queue'].get()
-            await dispatch_notification(args_d['settings'], notification)
+            logging.debug("Preparing to listen to notification queue.")
+            notification = await asyncio.to_thread(notification_queue.get)
+            #await dispatch_notification(args_d['settings'], notification)
+            asyncio.create_task(dispatch_notification(args_d['settings'], notification))
 
         except (asyncio.CancelledError, KeyboardInterrupt):
             logging.critical("Keyboard interrupt detected. Stopping notification watcher.")
