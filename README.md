@@ -22,9 +22,9 @@ Be cautious when using webhooks, as messages may be lost due to rate limiting or
 
 ## To-Do
 1. Attempt to reconnect to servers that stop sending new last_ledger index numbers.
-2. Send an admin warning if >50% of servers stop advancing.
+2. Send an admin warning if <= 80% of servers stop advancing.
 2. Integrate with sqlite DBs to retrieve server, validator, and notification data.
-4. Retry sending messages that fail (by piping them back into the queue).
+4. Consider adding an asyncio queue inside the notification_watcher, so that messags can be moved from the blocking multiprocess queue to the asyncio queue for processing without spawning a new thread.
 5. Support Slack & email notifications.
 6. Notify validator subscribers if their ephemeral key changes.
 7. Write a function to scrub sensitive notification data from logging.
