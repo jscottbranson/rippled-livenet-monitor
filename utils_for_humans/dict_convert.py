@@ -15,9 +15,9 @@ OUTPUT_FILE = 'settings_new.py'
 
 NOTIFY_TWILIO = False
 NOTIFY_DISCORD = False
-NOTIFY_MATTERMOST = False
+NOTIFY_MATTERMOST = True
 NOTIFY_SLACK = False
-NOTIFY_SMTP = False
+NOTIFY_SMTP = True
 
 PHONE_FROM = "+10000000"
 PHONE_TO = "+10000000"
@@ -25,12 +25,12 @@ PHONE_TO = "+10000000"
 DISCORD_ID = ""
 DISCORD_TOKEN = ""
 
-MATTERMOST_URL = "https://example.com"
-MATTERMOST_KEY = "foo"
-MATTERMOST_CHANNEL = "@bazz"
+MATTERMOST_URL = "https://mattermosturl.tld"
+MATTERMOST_KEY = "lettersAndNumbers"
+MATTERMOST_CHANNEL = "@foo"
 
-SMTP_RECIPIENT = "foo@bazz.com"
-SMTP_SUBJECT = "Urgent livenet monitoring message"
+SMTP_RECIPIENT = "anemailaddress@domain.tld"
+SMTP_SUBJECT = "URGENT XRPL Livenet Monitoring Warning"
 
 NOTIFICATION_DICT = {
     "notifications": {
@@ -75,7 +75,11 @@ NOTIFICATION_DICT = {
             "smtp_recipients": [
                 {
                     "smtp_to": None,
-                    "smtp_subject": None
+                    "smtp_subject": None,
+                },
+                {
+                    "smtp_to": None,
+                    "smtp_subject": None,
                 },
             ],
         }
@@ -154,21 +158,25 @@ def build_notification_dict():
     smtp['notify_smtp'] = NOTIFY_SMTP
 
     # Set Twilio numbers
-    twilio['phone_numbers'][0]['phone_from'] = PHONE_FROM
-    twilio['phone_numbers'][0]['phone_to'] = PHONE_TO
+    for number in twilio['phone_numbers']:
+        number['phone_from'] = PHONE_FROM
+        number['phone_to'] = PHONE_TO
 
     # Set Discord server info
-    discord['discord_servers'][0]['discord_id'] = DISCORD_ID
-    discord['discord_servers'][0]['discord_token'] = DISCORD_TOKEN
+    for server in discord['discord_servers']:
+        server['discord_id'] = DISCORD_ID
+        server['discord_token'] = DISCORD_TOKEN
 
     # Set MM server info
-    mattermost['mattermost_servers'][0]['mattermost_url'] = MATTERMOST_URL
-    mattermost['mattermost_servers'][0]['mattermost_key'] = MATTERMOST_KEY
-    mattermost['mattermost_servers'][0]['mattermost_channel'] = MATTERMOST_CHANNEL
+    for server in mattermost['mattermost_servers']:
+        server['mattermost_url'] = MATTERMOST_URL
+        server['mattermost_key'] = MATTERMOST_KEY
+        server['mattermost_channel'] = MATTERMOST_CHANNEL
 
     # Set SMTP recipient info
-    smtp['smtp_recipients'][0]['smtp_to'] = SMTP_RECIPIENT
-    smtp['smtp_recipients'][0]['smtp_subject'] = SMTP_SUBJECT
+    for recipient in smtp['smtp_recipients']:
+        recipient['smtp_to'] = SMTP_RECIPIENT
+        recipient['smtp_subject'] = SMTP_SUBJECT
 
 if __name__ == '__main__':
     build_notification_dict()
